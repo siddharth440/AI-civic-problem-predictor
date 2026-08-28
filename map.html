@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Civic Risk Map | AI Civic Problem Predictor</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body id="map-page">
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">AI</div>
+        <div class="sidebar-brand">
+          <span class="title">CivicPredict</span>
+          <span class="tagline">SIH 2026 Prototype</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <span class="nav-label">Main Platform</span>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home Page</a>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
+        <a href="citizen.html" class="nav-item"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
+        <a href="map.html" class="nav-item active"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
+        <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
+        <a href="alerts.html" class="nav-item"><i class="fas fa-bell"></i> Alerts Center</a>
+
+        <span class="nav-label" style="margin-top:1rem;">Documentation</span>
+        <a href="about.html" class="nav-item"><i class="fas fa-info-circle"></i> About & Innovation</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sih-badge">
+          <i class="fas fa-map-pin"></i>
+          <span>GIS Heatmap Layer</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-area">
+          <button class="mobile-menu-toggle" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+          <h1 class="header-page-title">Interactive City Infrastructure Risk Map</h1>
+        </div>
+        <div class="header-actions">
+          <div class="live-sim-badge active" id="live-sim-badge">
+            <span class="pulse-dot"></span>
+            <span class="sim-text">● LIVE SIMULATION</span>
+          </div>
+          <button class="btn-icon" id="theme-toggle" title="Toggle Dark/Light Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-content">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Geospatial Risk Intelligence</h2>
+            <p class="section-subtitle">Click on any municipal zone to inspect real-time risk telemetry and preventive action recommendations.</p>
+          </div>
+          <!-- Legend Bar -->
+          <div style="display:flex; align-items:center; gap:0.75rem; background:var(--bg-card); padding:0.5rem 1rem; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.8rem;">
+            <strong style="color:var(--text-secondary);">Risk Index:</strong>
+            <span class="badge badge-risk-low">Low (0-25%)</span>
+            <span class="badge badge-risk-medium">Med (26-50%)</span>
+            <span class="badge badge-risk-high">High (51-75%)</span>
+            <span class="badge badge-risk-critical">Critical (76-100%)</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 7fr 4fr; gap: 1.5rem;">
+          <!-- SVG City Map Container -->
+          <div class="map-container">
+            <svg class="city-map-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+              <!-- Map Background Grid -->
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148, 163, 184, 0.1)" stroke-width="1"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="var(--bg-tertiary)"/>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+
+              <!-- River Asset -->
+              <path d="M 0 380 Q 250 340 450 420 T 800 390 L 800 450 L 0 450 Z" fill="rgba(59, 130, 246, 0.25)" stroke="#3b82f6" stroke-width="2"/>
+              <text x="400" y="420" fill="#3b82f6" font-size="12" font-weight="600" opacity="0.7" text-anchor="middle">Riverside Channel</text>
+
+              <!-- Zone 1: Indiranagar North -->
+              <g onclick="RiskMap.selectZone('zone-1')">
+                <polygon id="map-poly-zone-1" class="map-zone" points="40,40 320,30 280,180 50,190" fill="#10b981" />
+                <text x="170" y="105" class="zone-label">Zone 1 - North</text>
+                <text x="170" y="125" class="zone-risk-score" id="map-score-zone-1">32%</text>
+              </g>
+
+              <!-- Zone 2: Riverside Boulevard -->
+              <g onclick="RiskMap.selectZone('zone-2')">
+                <polygon id="map-poly-zone-2" class="map-zone" points="330,30 580,40 560,200 290,180" fill="#f97316" />
+                <text x="440" y="105" class="zone-label">Zone 2 - Riverside</text>
+                <text x="440" y="125" class="zone-risk-score" id="map-score-zone-2">76%</text>
+              </g>
+
+              <!-- Zone 3: Central Market -->
+              <g onclick="RiskMap.selectZone('zone-3')">
+                <polygon id="map-poly-zone-3" class="map-zone" points="590,40 760,40 770,220 570,200" fill="#f59e0b" />
+                <text x="670" y="115" class="zone-label">Zone 3 - Central</text>
+                <text x="670" y="135" class="zone-risk-score" id="map-score-zone-3">58%</text>
+              </g>
+
+              <!-- Zone 4: Industrial Corridor -->
+              <g onclick="RiskMap.selectZone('zone-4')">
+                <polygon id="map-poly-zone-4" class="map-zone" points="50,200 280,190 260,350 40,360" fill="#ef4444" />
+                <text x="160" y="265" class="zone-label">Zone 4 - Industrial</text>
+                <text x="160" y="285" class="zone-risk-score" id="map-score-zone-4">87%</text>
+              </g>
+
+              <!-- Zone 5: West Suburbs -->
+              <g onclick="RiskMap.selectZone('zone-5')">
+                <polygon id="map-poly-zone-5" class="map-zone" points="290,190 560,210 530,340 270,350" fill="#f59e0b" />
+                <text x="410" y="265" class="zone-label">Zone 5 - West Suburbs</text>
+                <text x="410" y="285" class="zone-risk-score" id="map-score-zone-5">69%</text>
+              </g>
+
+              <!-- Zone 6: Heritage Old City -->
+              <g onclick="RiskMap.selectZone('zone-6')">
+                <polygon id="map-poly-zone-6" class="map-zone" points="570,210 770,230 750,380 540,350" fill="#ef4444" />
+                <text x="660" y="285" class="zone-label">Zone 6 - Old City</text>
+                <text x="660" y="305" class="zone-risk-score" id="map-score-zone-6">92%</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Zone Detailed Inspector Drawer -->
+          <div class="card" id="zone-details-drawer">
+            <div class="card-header">
+              <h3 class="card-title" id="drawer-zone-title">Zone Details</h3>
+              <span id="drawer-risk-level" class="badge badge-risk-critical">Critical</span>
+            </div>
+
+            <div style="padding: 0.5rem 0;">
+              <!-- Score Badge -->
+              <div style="background:var(--bg-tertiary); padding:1rem; border-radius:var(--radius-md); text-align:center; margin-bottom:1.25rem;">
+                <span style="font-size:0.8rem; color:var(--text-secondary);">Calculated Civic Risk Index</span>
+                <div style="font-size:2.5rem; font-weight:900; color:var(--accent-primary);" id="drawer-risk-score">0%</div>
+                <div style="font-size:0.8rem; color:var(--text-secondary); display:flex; justify-content:center; gap:1rem; margin-top:0.3rem;">
+                  <span>Confidence: <strong id="drawer-confidence">0%</strong></span>
+                  <span>Timeframe: <strong id="drawer-timeframe">-</strong></span>
+                </div>
+              </div>
+
+              <!-- Metrics -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.825rem; margin-bottom:1.25rem;">
+                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
+                  <span style="color:var(--text-muted); display:block;">Est Population</span>
+                  <strong style="color:var(--text-primary);" id="drawer-pop">0</strong>
+                </div>
+                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
+                  <span style="color:var(--text-muted); display:block;">Complaint History</span>
+                  <strong style="color:var(--text-primary);" id="drawer-complaints">0</strong>
+                </div>
+                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
+                  <span style="color:var(--text-muted); display:block;">Weather Risk</span>
+                  <strong style="color:var(--text-primary);" id="drawer-weather">-</strong>
+                </div>
+                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
+                  <span style="color:var(--text-muted); display:block;">Maintenance Cycle</span>
+                  <strong style="color:var(--text-primary);" id="drawer-service">-</strong>
+                </div>
+              </div>
+
+              <!-- Predicted Problem & Action -->
+              <div style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Predicted Problem Vector</label>
+                <div style="font-weight:700; font-size:1.05rem; color:var(--text-primary);" id="drawer-predicted-problem">-</div>
+              </div>
+
+              <div style="background:var(--accent-light); border:1px solid rgba(37,99,235,0.3); padding:0.85rem; border-radius:var(--radius-md); margin-bottom:1.5rem;">
+                <strong style="font-size:0.85rem; color:var(--accent-primary); display:block; margin-bottom:0.25rem;">Recommended Preventive Dispatch:</strong>
+                <p style="font-size:0.825rem; color:var(--text-secondary);" id="drawer-recommended-action">-</p>
+              </div>
+
+              <a href="dashboard.html" class="btn btn-primary" style="width:100%;">
+                <i class="fas fa-truck-fast"></i> Dispatch Action via Authority Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/prediction.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/map.js"></script>
+</body>
+</html>

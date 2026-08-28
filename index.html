@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Civic Problem Predictor | SIH Prototype</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- FontAwesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">AI</div>
+        <div class="sidebar-brand">
+          <span class="title">CivicPredict</span>
+          <span class="tagline">SIH 2026 Prototype</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <span class="nav-label">Main Platform</span>
+        <a href="index.html" class="nav-item active"><i class="fas fa-home"></i> Home Page</a>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
+        <a href="citizen.html" class="nav-item"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
+        <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
+        <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
+        <a href="alerts.html" class="nav-item"><i class="fas fa-bell"></i> Alerts Center</a>
+        
+        <span class="nav-label" style="margin-top:1rem;">Documentation</span>
+        <a href="about.html" class="nav-item"><i class="fas fa-info-circle"></i> About & Innovation</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sih-badge">
+          <i class="fas fa-trophy"></i>
+          <span>Smart India Hackathon 2026 Innovator Team</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-area">
+          <button class="mobile-menu-toggle" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+          <h1 class="header-page-title">Predictive Civic Intelligence Platform</h1>
+        </div>
+        <div class="header-actions">
+          <div class="live-sim-badge active" id="live-sim-badge">
+            <span class="pulse-dot"></span>
+            <span class="sim-text">● LIVE SIMULATION</span>
+          </div>
+          <button class="btn-icon" id="theme-toggle" title="Toggle Dark/Light Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+          <a href="citizen.html" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> File Report</a>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+          <div class="badge badge-risk-low" style="margin-bottom: 1rem; font-size: 0.8rem;">
+            <i class="fas fa-sparkles"></i> Proactive Civic Infrastructure Protection
+          </div>
+          <h1 class="hero-title">Predict Civic Problems Before They Become Emergencies</h1>
+          <p class="hero-subtitle">
+            AI-powered predictive intelligence for proactive municipal management. "Don't wait for citizens to report a civic problem — predict where the next issue is likely to occur and prevent it."
+          </p>
+          <div class="hero-ctas">
+            <a href="dashboard.html" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
+              <i class="fas fa-gauge-high"></i> Authority Dashboard
+            </a>
+            <a href="predictions.html" class="btn btn-secondary" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
+              <i class="fas fa-brain"></i> View AI Predictions
+            </a>
+            <a href="map.html" class="btn btn-outline" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
+              <i class="fas fa-map"></i> Interactive Map
+            </a>
+          </div>
+        </section>
+
+        <!-- Stats Bar -->
+        <div class="grid-stats">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper blue"><i class="fas fa-bullseye"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">124</span>
+              <span class="stat-label">Civic Problems Predicted</span>
+              <span class="stat-trend down"><i class="fas fa-arrow-down"></i> 42% Incident Reduction</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper red"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">4</span>
+              <span class="stat-label">High-Risk Zones Flagged</span>
+              <span class="stat-trend up"><i class="fas fa-exclamation-circle"></i> Requires Intervention</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper green"><i class="fas fa-shield-check"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">89</span>
+              <span class="stat-label">Prevented Emergencies</span>
+              <span class="stat-trend down"><i class="fas fa-check"></i> Clean Track Record</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper purple"><i class="fas fa-clock-rotate-left"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">4.2h</span>
+              <span class="stat-label">Avg Response Time</span>
+              <span class="stat-trend down"><i class="fas fa-bolt"></i> 70% Faster Response</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Problem vs Solution Paradigm -->
+        <div class="card" style="margin-top: 2rem;">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-arrows-split-up-and-left" style="color:var(--accent-primary);"></i> Paradigm Shift: Reactive vs Proactive Civic Management</h3>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <!-- Traditional -->
+            <div style="background: var(--risk-critical-bg); border: 1px solid rgba(239,68,68,0.3); padding: 1.5rem; border-radius: var(--radius-md);">
+              <h4 style="color: var(--risk-critical); margin-bottom: 0.75rem; font-weight: 700; display:flex; align-items:center; gap:0.5rem;">
+                <i class="fas fa-circle-xmark"></i> Traditional Reactive Management
+              </h4>
+              <p style="font-size:0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Municipal authorities wait for infrastructure to collapse or flood, relying entirely on citizen complaints after damage occurs.
+              </p>
+              <div style="font-size:0.85rem; font-weight:600; color:var(--risk-critical);">
+                Problem Occurs → Citizen Files Complaint → Delay → Emergency Reaction → Heavy Costs
+              </div>
+            </div>
+
+            <!-- Our Solution -->
+            <div style="background: var(--risk-low-bg); border: 1px solid rgba(16,185,129,0.3); padding: 1.5rem; border-radius: var(--radius-md);">
+              <h4 style="color: var(--risk-low); margin-bottom: 0.75rem; font-weight: 700; display:flex; align-items:center; gap:0.5rem;">
+                <i class="fas fa-circle-check"></i> AI CivicPredict (Proactive Intelligence)
+              </h4>
+              <p style="font-size:0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Analyzes multi-indicator environmental signals and historical trends to flag high-risk zones before complaints flood in.
+              </p>
+              <div style="font-size:0.85rem; font-weight:600; color:var(--risk-low);">
+                Historical Data → AI Risk Analysis → Early Alert → Preventive Action → Disaster Prevented
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- How It Works Flow Chart -->
+        <section style="margin: 3rem 0;">
+          <div class="section-header" style="text-align: center; display: block;">
+            <h2 class="section-title">How The Predictive AI System Works</h2>
+            <p class="section-subtitle">Seamless integration from raw multi-source telemetry to proactive field deployment</p>
+          </div>
+          <div class="flow-container">
+            <div class="flow-step">
+              <div class="flow-step-num">1</div>
+              <h4 style="font-size:0.95rem; font-weight:700;">Data Aggregation</h4>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Complaints, weather forecast, service logs & footfall</p>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+
+            <div class="flow-step">
+              <div class="flow-step-num">2</div>
+              <h4 style="font-size:0.95rem; font-weight:700;">AI Pattern Analysis</h4>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Explainable multi-indicator weighted score matrix</p>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+
+            <div class="flow-step">
+              <div class="flow-step-num">3</div>
+              <h4 style="font-size:0.95rem; font-weight:700;">Risk Classification</h4>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Zone risk scores (0–100%) & confidence mapping</p>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+
+            <div class="flow-step">
+              <div class="flow-step-num">4</div>
+              <h4 style="font-size:0.95rem; font-weight:700;">Early Warning Alert</h4>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Automated dispatch alerts to municipal authority</p>
+            </div>
+            <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+
+            <div class="flow-step">
+              <div class="flow-step-num">5</div>
+              <h4 style="font-size:0.95rem; font-weight:700;">Preventive Action</h4>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Targeted field maintenance before emergency occurs</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Core Feature Cards -->
+        <section style="margin-bottom: 3rem;">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Core Platform Innovation</h2>
+              <p class="section-subtitle">Built specifically for modern municipal governance</p>
+            </div>
+          </div>
+
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-brain"></i></div>
+              <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Explainable Risk Scoring</h3>
+              <p style="font-size:0.875rem; color:var(--text-secondary);">
+                Transparent 6-indicator weighted algorithm providing full breakdown of why a zone is flagged high risk.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-map-location-dot"></i></div>
+              <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Interactive SVG Heatmap</h3>
+              <p style="font-size:0.875rem; color:var(--text-secondary);">
+                Dynamic vector city map highlighting 6 municipal zones with real-time risk color coding and deep-dive drawer.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-bullhorn"></i></div>
+              <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Citizen Crowdsourcing</h3>
+              <p style="font-size:0.875rem; color:var(--text-secondary);">
+                Intuitive reporting portal featuring auto-generated Report IDs, severity tagging, and instant risk matrix sync.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+              <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Live Simulation Telemetry</h3>
+              <p style="font-size:0.875rem; color:var(--text-secondary);">
+                Simulate real-time sensor updates, weather pulses, and automatic alert notifications in demo mode.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/prediction.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citizen Reporting Portal | AI Civic Problem Predictor</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body id="citizen-page">
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">AI</div>
+        <div class="sidebar-brand">
+          <span class="title">CivicPredict</span>
+          <span class="tagline">SIH 2026 Prototype</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <span class="nav-label">Main Platform</span>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home Page</a>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
+        <a href="citizen.html" class="nav-item active"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
+        <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
+        <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
+        <a href="alerts.html" class="nav-item"><i class="fas fa-bell"></i> Alerts Center</a>
+
+        <span class="nav-label" style="margin-top:1rem;">Documentation</span>
+        <a href="about.html" class="nav-item"><i class="fas fa-info-circle"></i> About & Innovation</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sih-badge">
+          <i class="fas fa-users"></i>
+          <span>Citizen Feedback Gateway</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-area">
+          <button class="mobile-menu-toggle" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+          <h1 class="header-page-title">Citizen Incident Reporting Portal</h1>
+        </div>
+        <div class="header-actions">
+          <div class="live-sim-badge active" id="live-sim-badge">
+            <span class="pulse-dot"></span>
+            <span class="sim-text">● LIVE SIMULATION</span>
+          </div>
+          <button class="btn-icon" id="theme-toggle" title="Toggle Dark/Light Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-content">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Report a Civic Problem</h2>
+            <p class="section-subtitle">Your reports feed directly into our AI risk prediction engine to prevent widespread infrastructure emergencies.</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 2rem;">
+          <!-- Reporting Form Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-pen-to-square" style="color:var(--accent-primary);"></i> Submit New Report</h3>
+            </div>
+            <form id="citizen-report-form">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="report-name">Your Full Name *</label>
+                  <input type="text" id="report-name" class="form-control" placeholder="e.g. Ananya Sharma" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="report-category">Problem Category *</label>
+                  <select id="report-category" class="form-control" required>
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="Garbage">Garbage Accumulation</option>
+                    <option value="Pothole">Pothole / Road Damage</option>
+                    <option value="Water Leakage">Water Pipe Leakage</option>
+                    <option value="Drainage">Drainage / Sewage Backup</option>
+                    <option value="Flooding">Waterlogging / Flooding</option>
+                    <option value="Streetlight">Streetlight Non-Functional</option>
+                    <option value="Other">Other Civic Hazard</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="report-zone">Municipal Zone *</label>
+                  <select id="report-zone" class="form-control" required>
+                    <option value="zone-1">Zone 1 - Indiranagar North</option>
+                    <option value="zone-2">Zone 2 - Riverside Boulevard</option>
+                    <option value="zone-3">Zone 3 - Central Market</option>
+                    <option value="zone-4" selected>Zone 4 - Industrial Corridor</option>
+                    <option value="zone-5">Zone 5 - West Suburbs</option>
+                    <option value="zone-6">Zone 6 - Heritage Old City</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="report-severity">Observed Severity *</label>
+                  <select id="report-severity" class="form-control" required>
+                    <option value="Low">Low - Minor nuisance</option>
+                    <option value="Medium">Medium - Moderate disruption</option>
+                    <option value="High" selected>High - Impending hazard</option>
+                    <option value="Critical">Critical - Immediate danger / spill</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="report-location">Street Address / Landmark *</label>
+                <input type="text" id="report-location" class="form-control" placeholder="e.g. Near Factory Gate 3, Sector 12 Main Road" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="report-desc">Problem Description *</label>
+                <textarea id="report-desc" class="form-control" placeholder="Describe the civic issue in detail (e.g. size of pothole, water flow rate, duration)..." required></textarea>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="report-date">Incident Date *</label>
+                  <input type="date" id="report-date" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Attach Photo Evidence (Simulated)</label>
+                  <input type="file" id="report-image" class="form-control" accept="image/*">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem; padding:0.85rem; font-size:1rem;">
+                <i class="fas fa-paper-plane"></i> Submit Incident Report & Recalculate AI Risk Score
+              </button>
+            </form>
+          </div>
+
+          <!-- Submitted Reports History Drawer -->
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-history" style="color:var(--accent-primary);"></i> Recent Reports Stream</h3>
+              </div>
+              <div id="citizen-history-list">
+                <!-- Dynamically populated by citizen.js -->
+              </div>
+            </div>
+
+            <div class="card" style="background:var(--accent-light); border-color:rgba(37,99,235,0.3);">
+              <h4 style="font-weight:700; color:var(--accent-primary); margin-bottom:0.5rem;"><i class="fas fa-lightbulb"></i> How Citizen Data Helps AI</h4>
+              <p style="font-size:0.825rem; color:var(--text-secondary);">
+                Every report submitted by citizens is ingested into our JavaScript AI Risk Matrix. A surge in reports automatically increases the Risk Weight by +20%, triggering automated field alert dispatches to municipal teams before a major infrastructure emergency develops.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Submission Success Modal -->
+  <div class="modal-overlay" id="submission-success-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color:var(--risk-low); display:flex; align-items:center; gap:0.5rem;">
+          <i class="fas fa-circle-check"></i> Report Submitted Successfully
+        </h3>
+        <button class="modal-close" onclick="document.getElementById('submission-success-modal').classList.remove('active')">&times;</button>
+      </div>
+      <div style="padding:1rem 0;">
+        <p style="margin-bottom:1rem; color:var(--text-secondary);">Your civic report has been recorded in the system and synchronized with the AI Prediction Engine.</p>
+
+        <div style="background:var(--bg-tertiary); padding:1rem; border-radius:var(--radius-md); font-size:0.9rem; margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+            <span>Report Unique Tracking ID:</span>
+            <strong style="color:var(--accent-primary);"><code id="modal-report-id">REP-0000</code></strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+            <span>Category:</span>
+            <strong id="modal-report-cat">-</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>Location:</span>
+            <strong id="modal-report-zone">-</strong>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:1rem;">
+          <button class="btn btn-primary" style="flex:1;" onclick="document.getElementById('submission-success-modal').classList.remove('active')">
+            Done
+          </button>
+          <a href="predictions.html" class="btn btn-secondary" style="flex:1;">
+            View Updated AI Risk
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/prediction.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/citizen.js"></script>
+</body>
+</html>

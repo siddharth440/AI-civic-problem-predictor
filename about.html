@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About & SIH Innovation | AI Civic Problem Predictor</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body id="about-page">
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">AI</div>
+        <div class="sidebar-brand">
+          <span class="title">CivicPredict</span>
+          <span class="tagline">SIH 2026 Prototype</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <span class="nav-label">Main Platform</span>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home Page</a>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
+        <a href="citizen.html" class="nav-item"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
+        <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
+        <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
+        <a href="alerts.html" class="nav-item"><i class="fas fa-bell"></i> Alerts Center</a>
+
+        <span class="nav-label" style="margin-top:1rem;">Documentation</span>
+        <a href="about.html" class="nav-item active"><i class="fas fa-info-circle"></i> About & Innovation</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sih-badge">
+          <i class="fas fa-medal"></i>
+          <span>Smart India Hackathon 2026</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-area">
+          <button class="mobile-menu-toggle" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+          <h1 class="header-page-title">About Project & Core Innovation</h1>
+        </div>
+        <div class="header-actions">
+          <div class="live-sim-badge active" id="live-sim-badge">
+            <span class="pulse-dot"></span>
+            <span class="sim-text">● LIVE SIMULATION</span>
+          </div>
+          <button class="btn-icon" id="theme-toggle" title="Toggle Dark/Light Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-content">
+        <!-- Hero Banner -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(124,58,237,0.1)); border-color: rgba(37,99,235,0.3); padding:2rem; margin-bottom:2rem;">
+          <span class="badge badge-risk-low" style="margin-bottom:0.75rem;"><i class="fas fa-award"></i> Smart India Hackathon Prototype</span>
+          <h2 style="font-size:2rem; font-weight:800; margin-bottom:0.5rem; color:var(--text-primary);">AI Civic Problem Predictor</h2>
+          <p style="font-size:1.1rem; color:var(--accent-primary); font-weight:600; margin-bottom:1rem;">
+            "Predict civic problems before they become emergencies."
+          </p>
+          <p style="font-size:0.9rem; color:var(--text-secondary); max-width:850px;">
+            A revolutionary municipal management architecture that transitions city governance from reactive emergency repair to proactive AI-driven predictive prevention.
+          </p>
+        </div>
+
+        <!-- Before vs After Section (Requirement #15) -->
+        <div class="card" style="margin-bottom:2rem;">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-code-compare" style="color:var(--accent-primary);"></i> Before vs After: Architectural Comparison</h3>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem;">
+            <!-- Traditional -->
+            <div style="background:var(--bg-tertiary); padding:1.5rem; border-radius:var(--radius-md); border-left:4px solid var(--risk-critical);">
+              <h4 style="color:var(--risk-critical); font-weight:700; margin-bottom:1rem;"><i class="fas fa-xmark-circle"></i> Traditional Civic Management</h4>
+              <ul style="list-style:none; display:flex; flex-direction:column; gap:0.75rem; font-size:0.875rem;">
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-critical);"></i> 1. Problem occurs (e.g. pipe bursts or drain overflows)</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-critical);"></i> 2. Affected citizens experience damage and file complaints</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-critical);"></i> 3. Administrative delay in ticket routing and verification</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-critical);"></i> 4. Emergency reaction when damage has already worsened</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-critical);"></i> 5. High repair costs, traffic chaos & public dissatisfaction</li>
+              </ul>
+            </div>
+
+            <!-- CivicPredict -->
+            <div style="background:var(--accent-light); padding:1.5rem; border-radius:var(--radius-md); border-left:4px solid var(--risk-low);">
+              <h4 style="color:var(--risk-low); font-weight:700; margin-bottom:1rem;"><i class="fas fa-check-circle"></i> AI CivicPredict Platform</h4>
+              <ul style="list-style:none; display:flex; flex-direction:column; gap:0.75rem; font-size:0.875rem;">
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-low);"></i> 1. Historical complaints & multi-source telemetry aggregated</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-low);"></i> 2. AI Risk Engine calculates 0–100% risk index</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-low);"></i> 3. Early warning alert dispatched to municipal authority</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-low);"></i> 4. Preventive field maintenance scheduled BEFORE failure</li>
+                <li style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-arrow-right" style="color:var(--risk-low);"></i> 5. Zero citizen damage, 70% cost savings & smooth traffic</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tech Stack & Prototype Disclaimer -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-layer-group" style="color:var(--accent-primary);"></i> Technology Stack</h3>
+            </div>
+            <ul style="line-height:2; font-size:0.9rem; color:var(--text-secondary); padding-left:1.25rem;">
+              <td><strong>Frontend:</strong> Pure HTML5, CSS3, Vanilla JavaScript (ES6+)</td>
+              <td><strong>Persistence:</strong> Web Storage API (localStorage)</td>
+              <td><strong>Risk Engine:</strong> Explainable Weighted Score Matrix (PredictionEngine)</td>
+              <td><strong>Mapping:</strong> Scalable Vector Graphics (SVG) Interactive Canvas</td>
+              <td><strong>Charts:</strong> Chart.js via static CDN</td>
+              <td><strong>Compatibility:</strong> 100% Static & GitHub Pages Compatible</td>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-rocket" style="color:var(--accent-primary);"></i> Production Roadmap</h3>
+            </div>
+            <p style="font-size:0.875rem; color:var(--text-secondary); margin-bottom:1rem;">
+              <em>"The current prototype uses a JavaScript-based explainable prediction engine and simulated data. A production implementation could integrate trained ML models (e.g. XGBoost / LSTM) and verified municipal datasets."</em>
+            </p>
+            <ul style="line-height:1.8; font-size:0.85rem; color:var(--text-secondary); padding-left:1.25rem;">
+              <li>Integration with municipal IoT water pressure & sewer sensors</li>
+              <li>Real-time satellite & weather radar API connectivity</li>
+              <li>Mobile Android/iOS PWA for field maintenance workers</li>
+              <li>GIS mapping integration with OpenStreetMap / Bhuvan API</li>
+            </ul>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/prediction.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

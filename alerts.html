@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alerts Center | AI Civic Problem Predictor</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body id="alerts-page">
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">AI</div>
+        <div class="sidebar-brand">
+          <span class="title">CivicPredict</span>
+          <span class="tagline">SIH 2026 Prototype</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <span class="nav-label">Main Platform</span>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home Page</a>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
+        <a href="citizen.html" class="nav-item"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
+        <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
+        <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
+        <a href="alerts.html" class="nav-item active"><i class="fas fa-bell"></i> Alerts Center</a>
+
+        <span class="nav-label" style="margin-top:1rem;">Documentation</span>
+        <a href="about.html" class="nav-item"><i class="fas fa-info-circle"></i> About & Innovation</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sih-badge">
+          <i class="fas fa-tower-broadcast"></i>
+          <span>Early Alert Broadcast</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-area">
+          <button class="mobile-menu-toggle" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+          <h1 class="header-page-title">Municipal Alert & Early Warning Center</h1>
+        </div>
+        <div class="header-actions">
+          <div class="live-sim-badge active" id="live-sim-badge">
+            <span class="pulse-dot"></span>
+            <span class="sim-text">● LIVE SIMULATION</span>
+          </div>
+          <button class="btn-icon" id="theme-toggle" title="Toggle Dark/Light Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-content">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">System Alerts & Notifications</h2>
+            <p class="section-subtitle">Real-time dispatches emitted when zone risk indicators breach safety thresholds.</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="clear-all-alerts-btn">
+            <i class="fas fa-trash"></i> Clear All Alerts
+          </button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="card" style="padding: 1rem; margin-bottom: 1.5rem;">
+          <div style="display:flex; gap:0.5rem;" id="alert-filters">
+            <button class="btn btn-primary btn-sm alert-filter-btn active" data-filter="All">All Alerts</button>
+            <button class="btn btn-secondary btn-sm alert-filter-btn" data-filter="Unread">Unread</button>
+            <button class="btn btn-secondary btn-sm alert-filter-btn" data-filter="Critical">Critical Only</button>
+            <button class="btn btn-secondary btn-sm alert-filter-btn" data-filter="High">High Risk</button>
+          </div>
+        </div>
+
+        <!-- Alerts List Container -->
+        <div id="alerts-list-container">
+          <!-- Dynamically populated by alerts.js -->
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/prediction.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/alerts.js"></script>
+</body>
+</html>
