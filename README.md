@@ -3,7 +3,7 @@
 > **Predict civic problems before they become emergencies.**
 
 An innovative, 100% static, SIH-level civic-management prototype designed to predict potential civic infrastructure failures before they escalate into emergencies.
-
+ 
 ---
 
 ## 🏆 Smart India Hackathon (SIH) Concept
