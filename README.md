@@ -6,7 +6,8 @@ An innovative, 100% static, SIH-level civic-management prototype designed to pre
  
 ---
 
-## 🏆 Smart India Hackathon (SIH) Concept
+## 🏆 Smart India Hackathon (SIH) Concept  
+
 
 ### Problem Statement
 Traditional municipal civic management systems are **reactive**. Municipalities wait for infrastructure failures (e.g. pipe bursts, drainage overflows, massive pothole clusters, garbage accumulation) to occur, after which citizens file complaints, leading to delayed emergency repairs, elevated municipal costs, and severe public inconvenience.
