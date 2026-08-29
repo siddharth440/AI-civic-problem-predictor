@@ -10,7 +10,7 @@ An innovative, 100% static, SIH-level civic-management prototype designed to pre
 
 ### Problem Statement
 Traditional municipal civic management systems are **reactive**. Municipalities wait for infrastructure failures (e.g. pipe bursts, drainage overflows, massive pothole clusters, garbage accumulation) to occur, after which citizens file complaints, leading to delayed emergency repairs, elevated municipal costs, and severe public inconvenience.
-
+  
 ### Proposed Solution
 **AI Civic Problem Predictor** shifts municipal management from **reactive repair** to **proactive prediction**. By aggregating multi-indicator telemetry—such as historical complaints, complaint surge frequency, weather/rainfall forecasts, service delays, and population activity—the system calculates a **Civic Risk Score (0–100%)** across city zones and alerts authorities to deploy preventive maintenance *before* problems occur.
 
