@@ -94,9 +94,7 @@ function createApp(options = {}) {
       const complaint = validateComplaint(req.body);
       await store.update(records => {
         if (records.some(record => record.id === complaint.id)) {
-          const error = new Error('Complaint ID already exists.');
-          error.status = 409;
-          throw error;
+          complaint.id = createUniqueComplaintId(records.map(record => record.id));
         }
         records.unshift(complaint);
       });
@@ -257,9 +255,9 @@ function validateComplaint(body) {
     error.status = 400;
     throw error;
   }
-  const id = typeof input.id === 'string' && /^CMP-[A-Z0-9]{5,32}$/.test(input.id)
+  const id = typeof input.id === 'string' && /^REP-[A-Z0-9]{6}$/.test(input.id)
     ? input.id
-    : `CMP-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+    : createUniqueComplaintId();
   const createdAt = new Date().toISOString();
   return {
     id,
@@ -280,6 +278,15 @@ function validateComplaint(body) {
     resolution: '',
     history: [{ status: 'Submitted', at: createdAt, note: 'Complaint received.' }]
   };
+}
+
+function createUniqueComplaintId(existingIds = []) {
+  const usedIds = new Set(existingIds.map(id => String(id).toUpperCase()));
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const id = `REP-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+    if (!usedIds.has(id)) return id;
+  }
+  throw new Error('Unable to generate a unique complaint ID.');
 }
 
 function hasValidImageSignature(image, mimeType) {

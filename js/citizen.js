@@ -77,7 +77,7 @@ const CitizenPortal = {
       await DataStore.storeImage(imageId, image);
     }
 
-    const reportId = DataStore.createId('CMP');
+    let reportId = DataStore.createComplaintId();
     const createdAt = new Date().toISOString();
     const report = {
       id: reportId,
@@ -105,6 +105,10 @@ const CitizenPortal = {
     let backendResponse = null;
     try {
       backendResponse = await DataStore.submitToBackend(report);
+      if (backendResponse?.complaint?.id) {
+        reportId = backendResponse.complaint.id;
+        report.id = reportId;
+      }
     } catch (error) {
       backendError = error;
     }

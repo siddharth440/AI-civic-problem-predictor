@@ -287,6 +287,24 @@ const DataStore = {
     return `${prefix}-${token}`;
   },
 
+  createComplaintId() {
+    const existingIds = new Set(this.getReports().map(report => String(report.id).toUpperCase()));
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const bytes = new Uint8Array(3);
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        crypto.getRandomValues(bytes);
+      } else {
+        for (let index = 0; index < bytes.length; index++) {
+          bytes[index] = Math.floor(Math.random() * 256);
+        }
+      }
+      const token = Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('').toUpperCase();
+      const id = `REP-${token}`;
+      if (!existingIds.has(id)) return id;
+    }
+    throw new Error('Unable to generate a unique complaint ID. Please try again.');
+  },
+
   getApiBaseUrl() {
     return String(window.CIVIC_CONFIG.API_BASE_URL || '').trim().replace(/\/+$/, '');
   },

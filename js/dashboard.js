@@ -18,6 +18,9 @@ const Dashboard = {
       });
     });
     window.addEventListener('civic-data-changed', () => this.render());
+    window.addEventListener('storage', event => {
+      if (event.key === 'sih_civic_reports') this.render();
+    });
     window.onLiveSimUpdate = () => this.render();
     document.getElementById('priority-actions-tbody')?.addEventListener('change', event => {
       if (event.target.matches('[data-prediction-status]')) {

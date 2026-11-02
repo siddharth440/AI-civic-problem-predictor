@@ -12,7 +12,7 @@ let baseUrl;
 let dataDirectory;
 
 const complaint = {
-  id: 'CMP-TEST12345',
+  id: 'REP-ABC123',
   name: 'Test Citizen',
   title: 'Blocked neighborhood drain',
   category: 'Drainage Problems',
@@ -59,12 +59,26 @@ test('complaints can be submitted and publicly tracked without revealing citizen
   assert.equal(created.status, 201);
   const publicRecord = (await created.json()).complaint;
   assert.equal(publicRecord.id, complaint.id);
+  assert.match(publicRecord.id, /^REP-[A-Z0-9]{6}$/);
   assert.equal(publicRecord.status, 'Submitted');
   assert.equal('name' in publicRecord, false);
 
   const tracked = await fetch(`${baseUrl}/api/complaints/${complaint.id}`);
   assert.equal(tracked.status, 200);
   assert.equal((await tracked.json()).complaint.title, complaint.title);
+
+  const duplicate = await fetch(`${baseUrl}/api/complaints`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: allowedOrigin },
+    body: JSON.stringify(complaint)
+  });
+  assert.equal(duplicate.status, 201);
+  const reassigned = (await duplicate.json()).complaint;
+  assert.match(reassigned.id, /^REP-[A-Z0-9]{6}$/);
+  assert.notEqual(reassigned.id, complaint.id);
+  const duplicateTracked = await fetch(`${baseUrl}/api/complaints/${reassigned.id}`);
+  assert.equal(duplicateTracked.status, 200);
+  assert.equal((await duplicateTracked.json()).complaint.id, reassigned.id);
 });
 
 test('invalid submissions and unapproved origins are rejected', async () => {
@@ -88,7 +102,7 @@ test('admin CRUD routes require a bearer token and persist authority updates', a
   const headers = { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' };
   const listed = await fetch(`${baseUrl}/api/admin/complaints`, { headers });
   assert.equal(listed.status, 200);
-  assert.equal((await listed.json()).complaints.length, 1);
+  assert.equal((await listed.json()).complaints.length, 2);
 
   const updated = await fetch(`${baseUrl}/api/admin/complaints/${complaint.id}`, {
     method: 'PATCH',
