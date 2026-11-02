@@ -3,7 +3,7 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const { after, before, test } = require('node:test');
-const { createApp } = require('../backend/app');
+const { createApp, validateComplaint } = require('../backend/app');
 
 const adminToken = 'test-admin-token-that-is-at-least-thirty-two-characters';
 const allowedOrigin = 'https://siddharth440.github.io';
@@ -20,6 +20,10 @@ const complaint = {
   zoneId: 'zone-1',
   zoneName: 'Zone 1',
   location: 'Example Street',
+  latitude: 12.9716,
+  longitude: 77.5946,
+  locationAccuracy: 18,
+  locationMethod: 'manual',
   date: '2026-11-02',
   time: '10:30',
   priority: 'High'
@@ -62,6 +66,9 @@ test('complaints can be submitted and publicly tracked without revealing citizen
   assert.match(publicRecord.id, /^REP-[A-Z0-9]{6}$/);
   assert.equal(publicRecord.status, 'Submitted');
   assert.equal('name' in publicRecord, false);
+  assert.equal('latitude' in publicRecord, false);
+  assert.equal('longitude' in publicRecord, false);
+  assert.equal('locationAccuracy' in publicRecord, false);
 
   const tracked = await fetch(`${baseUrl}/api/complaints/${complaint.id}`);
   assert.equal(tracked.status, 200);
@@ -89,10 +96,26 @@ test('invalid submissions and unapproved origins are rejected', async () => {
   });
   assert.equal(invalid.status, 400);
 
+  const invalidCoordinates = await fetch(`${baseUrl}/api/complaints`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...complaint, id: 'REP-COORD1', latitude: 95 })
+  });
+  assert.equal(invalidCoordinates.status, 400);
+
   const blockedOrigin = await fetch(`${baseUrl}/api/health`, {
     headers: { Origin: 'https://unapproved.example' }
   });
   assert.equal(blockedOrigin.status, 403);
+});
+
+test('backend records without coordinate-sharing consent retain no exact coordinates', () => {
+  const { latitude, longitude, locationAccuracy, locationMethod, ...withoutCoordinates } = complaint;
+  const record = validateComplaint(withoutCoordinates);
+  assert.equal(record.latitude, null);
+  assert.equal(record.longitude, null);
+  assert.equal(record.locationAccuracy, null);
+  assert.equal(record.locationMethod, 'none');
 });
 
 test('admin CRUD routes require a bearer token and persist authority updates', async () => {
@@ -102,7 +125,12 @@ test('admin CRUD routes require a bearer token and persist authority updates', a
   const headers = { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' };
   const listed = await fetch(`${baseUrl}/api/admin/complaints`, { headers });
   assert.equal(listed.status, 200);
-  assert.equal((await listed.json()).complaints.length, 2);
+  const adminRecords = (await listed.json()).complaints;
+  assert.equal(adminRecords.length, 2);
+  assert.equal(adminRecords[0].latitude, complaint.latitude);
+  assert.equal(adminRecords[0].longitude, complaint.longitude);
+  assert.equal(adminRecords[0].locationAccuracy, complaint.locationAccuracy);
+  assert.equal(adminRecords[0].locationMethod, complaint.locationMethod);
 
   const updated = await fetch(`${baseUrl}/api/admin/complaints/${complaint.id}`, {
     method: 'PATCH',

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Civic Risk Map | AI Civic Problem Predictor</title>
+  <title>Nearby Civic Complaints | AI Civic Problem Predictor</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -11,7 +11,6 @@
 </head>
 <body id="map-page">
   <div class="app-container">
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo-icon">AI</div>
@@ -30,129 +29,124 @@
         <a href="map.html" class="nav-item active"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
         <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
         <a href="alerts.html" class="nav-item"><i class="fas fa-bell"></i> Alerts Center</a>
-
         <span class="nav-label" style="margin-top:1rem;">Documentation</span>
         <a href="about.html" class="nav-item"><i class="fas fa-info-circle"></i> About & Innovation</a>
       </nav>
       <div class="sidebar-footer">
         <div class="sih-badge">
           <i class="fas fa-map-pin"></i>
-          <span>Simulated Risk Schematic</span>
+          <span>Nearby Complaint Map</span>
         </div>
       </div>
     </aside>
 
-    <!-- Main Wrapper -->
     <div class="main-wrapper">
-      <!-- Top Header -->
       <header class="top-header">
         <div class="header-title-area">
-          <button class="mobile-menu-toggle" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
-          <h1 class="header-page-title">Schematic Civic Risk Visualization</h1>
+          <button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Toggle navigation" aria-expanded="false"><i class="fas fa-bars"></i></button>
+          <h1 class="header-page-title">Nearby Civic Complaints</h1>
         </div>
         <div class="header-actions">
-          <div class="live-sim-badge active" id="live-sim-badge">
+          <div class="live-sim-badge" id="live-sim-badge">
             <span class="pulse-dot"></span>
-            <span class="sim-text">● LIVE SIMULATION</span>
+            <span class="sim-text">○ DEMO DATA · SIMULATION OFF</span>
           </div>
-          <button class="btn-icon" id="theme-toggle" title="Toggle Dark/Light Mode">
-            <i class="fas fa-moon"></i>
-          </button>
+          <button class="btn-icon" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle dark or light mode"><i class="fas fa-moon"></i></button>
         </div>
       </header>
 
-      <!-- Page Content -->
       <main class="page-content">
         <div class="section-header">
           <div>
-            <h2 class="section-title">Geospatial Risk Intelligence</h2>
-            <p class="section-subtitle">Interactive risk visualization. All shapes and marker positions are schematic and simulated, not verified municipal boundaries or geocoded locations.</p>
+            <h2 class="section-title">Live location and complaint map</h2>
+            <p class="section-subtitle">Use your location or select a point on the map. GPS is requested only after you press the location button.</p>
           </div>
-          <!-- Legend Bar -->
-          <div style="display:flex; align-items:center; gap:0.75rem; background:var(--bg-card); padding:0.5rem 1rem; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.8rem;">
-            <strong style="color:var(--text-secondary);">Risk Index:</strong>
-            <span class="badge badge-risk-low">Low (0-24)</span>
-            <span class="badge badge-risk-medium">Medium (25-49)</span>
-            <span class="badge badge-risk-high">High (50-74)</span>
-            <span class="badge badge-risk-critical">Critical (75-100)</span>
+          <div class="map-risk-legend" aria-label="Complaint priority legend">
+            <strong>Priority:</strong>
+            <span><i class="map-legend-dot priority-low"></i> Low</span>
+            <span><i class="map-legend-dot priority-medium"></i> Medium</span>
+            <span><i class="map-legend-dot priority-high"></i> High</span>
+            <span><i class="map-legend-dot priority-critical"></i> Critical</span>
+            <span><i class="map-legend-dot priority-current"></i> Your location</span>
           </div>
         </div>
 
-        <div class="risk-map-layout">
-          <div class="map-container">
-            <div id="civic-risk-map" role="application" aria-label="Schematic interactive civic risk map"></div>
-            <p class="map-disclaimer">SIMULATED SCHEMATIC · Not to scale · Marker positions are not geocoded</p>
-          </div>
+        <div class="risk-map-layout nearby-map-layout">
+          <section class="map-container" aria-label="OpenStreetMap and nearby complaints">
+            <div id="civic-risk-map" role="application" aria-label="Interactive OpenStreetMap. Select a location by clicking the map."></div>
+            <p class="map-disclaimer">Map data &copy; OpenStreetMap contributors · Click map to choose a report location</p>
+          </section>
 
-          <!-- Zone Detailed Inspector Drawer -->
-          <div class="card" id="zone-details-drawer">
-            <div class="map-filters">
-              <label><input id="map-show-complaints" type="checkbox" checked> Show simulated complaint markers</label>
-              <select id="map-filter-category" class="form-control" aria-label="Filter complaint markers by category">
-                <option value="">All categories</option>
-              </select>
-            </div>
-            <div class="card-header">
-              <h3 class="card-title" id="drawer-zone-title">Zone Details</h3>
-              <span id="drawer-risk-level" class="badge badge-risk-critical">Critical</span>
-            </div>
-
-            <div style="padding: 0.5rem 0;">
-              <!-- Score Badge -->
-              <div style="background:var(--bg-tertiary); padding:1rem; border-radius:var(--radius-md); text-align:center; margin-bottom:1.25rem;">
-                <span style="font-size:0.8rem; color:var(--text-secondary);">Calculated Civic Risk Index</span>
-                <div style="font-size:2.5rem; font-weight:900; color:var(--accent-primary);" id="drawer-risk-score">0%</div>
-                <div style="font-size:0.8rem; color:var(--text-secondary); display:flex; justify-content:center; gap:1rem; margin-top:0.3rem;">
-                  <span>Signal method: <strong id="drawer-confidence">Weighted rules</strong></span>
-                  <span>Timeframe: <strong id="drawer-timeframe">-</strong></span>
-                </div>
+          <aside class="card nearby-panel">
+            <section class="location-controls" aria-labelledby="location-controls-title">
+              <div class="card-header">
+                <h3 class="card-title" id="location-controls-title">Your location</h3>
               </div>
+              <button type="button" class="btn btn-primary" id="use-current-location">
+                <i class="fas fa-location-crosshairs"></i> Use My Current Location
+              </button>
+              <p id="location-loading" class="location-loading" role="status" hidden>
+                <span class="loading-spinner" aria-hidden="true"></span> Detecting location…
+              </p>
+              <p id="location-message" class="location-message" role="status" aria-live="polite">
+                Location permission is not requested until you choose to use GPS. You can also click anywhere on the map.
+              </p>
+              <dl class="location-coordinates">
+                <div><dt>Latitude</dt><dd id="current-latitude">—</dd></div>
+                <div><dt>Longitude</dt><dd id="current-longitude">—</dd></div>
+                <div><dt>Accuracy</dt><dd id="current-accuracy">—</dd></div>
+              </dl>
+              <button type="button" class="btn btn-outline" id="confirm-report-location" disabled>
+                <i class="fas fa-check"></i> Confirm and use for complaint
+              </button>
+              <p class="location-privacy-note">Your GPS position stays in this browser unless you separately opt in to share coordinates when submitting a complaint. Location is not continuously tracked.</p>
+            </section>
 
-              <!-- Metrics -->
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.825rem; margin-bottom:1.25rem;">
-                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
-                  <span style="color:var(--text-muted); display:block;">Est Population</span>
-                  <strong style="color:var(--text-primary);" id="drawer-pop">0</strong>
-                </div>
-                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
-                  <span style="color:var(--text-muted); display:block;">Complaint History</span>
-                  <strong style="color:var(--text-primary);" id="drawer-complaints">0</strong>
-                </div>
-                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
-                  <span style="color:var(--text-muted); display:block;">Weather Risk</span>
-                  <strong style="color:var(--text-primary);" id="drawer-weather">-</strong>
-                </div>
-                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:0.6rem; border-radius:var(--radius-sm);">
-                  <span style="color:var(--text-muted); display:block;">Maintenance Cycle</span>
-                  <strong style="color:var(--text-primary);" id="drawer-service">-</strong>
-                </div>
+            <section class="nearby-controls" aria-labelledby="nearby-controls-title">
+              <div class="card-header">
+                <h3 class="card-title" id="nearby-controls-title">Nearby complaints</h3>
+                <span class="badge badge-risk-medium" id="nearby-count">0</span>
               </div>
-
-              <!-- Predicted Problem & Action -->
-              <div style="margin-bottom:1rem;">
-                <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Predicted Problem Vector</label>
-                <div style="font-weight:700; font-size:1.05rem; color:var(--text-primary);" id="drawer-predicted-problem">-</div>
+              <p class="data-scope-note">Nearby records are from this browser only. Complaints from other users are not visible unless a shared service has been explicitly connected and synchronized here.</p>
+              <div class="nearby-filter-grid">
+                <label class="form-group">Category
+                  <select id="nearby-filter-category" class="form-control"><option value="">All categories</option></select>
+                </label>
+                <label class="form-group">Priority
+                  <select id="nearby-filter-priority" class="form-control">
+                    <option value="">All priorities</option>
+                    <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
+                  </select>
+                </label>
+                <label class="form-group">Status
+                  <select id="nearby-filter-status" class="form-control">
+                    <option value="">All statuses</option>
+                    <option>Submitted</option><option>Under Review</option><option>Assigned</option>
+                    <option>In Progress</option><option>Resolved</option><option>Rejected</option>
+                  </select>
+                </label>
+                <label class="form-group">Distance radius
+                  <select id="nearby-filter-radius" class="form-control" disabled>
+                    <option value="500">500 meters</option>
+                    <option value="1000">1 kilometer</option>
+                    <option value="2000">2 kilometers</option>
+                    <option value="5000" selected>5 kilometers</option>
+                  </select>
+                </label>
               </div>
-
-              <div style="background:var(--accent-light); border:1px solid rgba(37,99,235,0.3); padding:0.85rem; border-radius:var(--radius-md); margin-bottom:1.5rem;">
-                <strong style="font-size:0.85rem; color:var(--accent-primary); display:block; margin-bottom:0.25rem;">Recommended Preventive Dispatch:</strong>
-                <p style="font-size:0.825rem; color:var(--text-secondary);" id="drawer-recommended-action">-</p>
-              </div>
-
-              <a href="dashboard.html" class="btn btn-primary" style="width:100%;">
-                <i class="fas fa-truck-fast"></i> Dispatch Action via Authority Dashboard
-              </a>
-            </div>
-          </div>
+              <p id="nearby-location-hint" class="nearby-location-hint">Set your location to calculate distances and apply the radius filter.</p>
+              <div id="nearby-complaint-list" class="nearby-complaint-list" aria-live="polite"></div>
+            </section>
+          </aside>
         </div>
       </main>
     </div>
   </div>
 
   <script src="js/config.js"></script>
-  <script src="js/data.js"></script>
+  <script src="js/data.js?v=20261102"></script>
   <script src="js/prediction.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/map.js"></script>
+  <script src="js/map.js?v=20261102"></script>
 </body>
 </html>

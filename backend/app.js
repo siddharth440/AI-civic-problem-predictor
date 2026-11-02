@@ -247,6 +247,20 @@ function validateComplaint(body) {
     error.status = 400;
     throw error;
   }
+  const hasLatitude = input.latitude !== undefined && input.latitude !== null;
+  const hasLongitude = input.longitude !== undefined && input.longitude !== null;
+  const hasCoordinates = hasLatitude || hasLongitude;
+  if (hasLatitude !== hasLongitude
+      || (hasCoordinates && (!Number.isFinite(input.latitude) || input.latitude < -90 || input.latitude > 90
+        || !Number.isFinite(input.longitude) || input.longitude < -180 || input.longitude > 180))
+      || (input.locationAccuracy !== undefined && input.locationAccuracy !== null
+        && (!Number.isFinite(input.locationAccuracy) || input.locationAccuracy < 0))
+      || (hasCoordinates && !['gps', 'manual'].includes(input.locationMethod))
+      || (!hasCoordinates && input.locationMethod !== undefined && input.locationMethod !== 'none')) {
+    const error = new Error('Complaint coordinates or location metadata are invalid.');
+    error.status = 400;
+    throw error;
+  }
   const incidentDate = new Date(`${input.date}T${input.time}:00Z`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !/^\d{2}:\d{2}$/.test(input.time)
       || Number.isNaN(incidentDate.getTime()) || incidentDate.toISOString().slice(0, 10) !== input.date
@@ -268,6 +282,10 @@ function validateComplaint(body) {
     zoneId: input.zoneId.trim(),
     zoneName: input.zoneName.trim(),
     location: input.location.trim(),
+    latitude: hasCoordinates ? input.latitude : null,
+    longitude: hasCoordinates ? input.longitude : null,
+    locationAccuracy: input.locationAccuracy ?? null,
+    locationMethod: hasCoordinates ? input.locationMethod : 'none',
     date: input.date,
     time: input.time,
     createdAt,

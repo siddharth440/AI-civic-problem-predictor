@@ -21,7 +21,7 @@ Traditional municipal civic management systems are **reactive**. Municipalities 
 - IndexedDB for browser complaint records and photo blobs, with localStorage cache and preferences.
 - Authority dashboard with actual stored-record counts, filters, sorting, complaint details, status and department controls, local backup/restore, and optional backend connection.
 - Explainable risk scores (0–100) using complaint frequency, severity, historical estimates, population estimates, infrastructure vulnerability, recent trends, and unresolved reports.
-- Leaflet schematic risk map; every shape and complaint marker is simulated and is not geocoded.
+- Leaflet/OpenStreetMap nearby complaints map with click-to-select report locations, optional user-initiated GPS, accuracy display, and priority-coded markers.
 - Chart.js analytics from stored complaints, daily/weekly trends, filters, CSV export, and PDF report.
 - Event-based notification history, read state, and an explicitly simulated demo mode.
 - Static HTML/CSS/Vanilla JavaScript frontend remains compatible with GitHub Pages.
@@ -36,6 +36,14 @@ The frontend is deployed at:
 <https://siddharth440.github.io/AI-civic-problem-predictor/>
 
 GitHub Pages can serve the static frontend but cannot run the Express API.
+
+## Live location and nearby complaints
+
+Open **Civic Risk Map** and choose **Use My Current Location** to request browser GPS permission. The site does not prompt on page load or continuously track the device. You can instead click a point on the map, review its coordinates, and confirm it for a new report. The citizen form receives that selection and stores latitude, longitude, accuracy (when provided), and whether the point came from GPS or a manual map selection.
+
+Nearby distances use the Haversine formula and the selected 500 m, 1 km, 2 km, or 5 km radius. Category, priority, and status filters update the markers and nearest-first list. Existing records without coordinates cannot be placed on the map. Browser-only reports are visible only in that browser; reports from other users are not available unless a shared backend has been configured and its records synchronized in that browser.
+
+Coordinates are saved locally with the report. They are excluded from a backend submission unless the citizen explicitly checks the location-sharing consent box on the complaint form. Public complaint lookup responses do not include exact coordinates. GPS requires a secure context (HTTPS, or localhost for local development), browser permission, and network access to load OpenStreetMap tiles.
 
 ## Optional Express backend
 
@@ -82,7 +90,7 @@ API endpoints:
 - The dashboard's JSON backup covers complaint, prediction, alert, and zone records; photos are not embedded.
 - Zone population and infrastructure values are configurable demo estimates in `js/data.js`.
 - The optional JSON backend requires persistent storage supplied by the hosting provider; it is a lightweight prototype, not a horizontally scaled database.
-- Map zones and complaint positions are deliberately schematic. No real municipal geography or incident coordinates are claimed.
+- Map tiles use OpenStreetMap. Only complaints with supplied coordinates are plotted; legacy/demo records without coordinates are not geocoded or assigned an invented map position.
 - Demo simulation events are generated locally and must not be interpreted as live sensor events.
 
 ## Tests

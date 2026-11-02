@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const CitizenPortal = {
   init() {
     this.initForm();
+    this.applyMapLocationSelection();
     this.renderUserHistory();
     window.addEventListener('civic-data-changed', () => this.renderUserHistory());
   },
@@ -33,6 +34,46 @@ const CitizenPortal = {
   formatDate(date) {
     const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return localDate.toISOString().slice(0, 10);
+  },
+
+  applyMapLocationSelection() {
+    let rawSelection;
+    try {
+      rawSelection = sessionStorage.getItem('civic_report_location_selection');
+      sessionStorage.removeItem('civic_report_location_selection');
+    } catch (error) {
+      console.error('Unable to read the map-selected complaint location.', error);
+      return;
+    }
+    if (!rawSelection) return;
+
+    let selection;
+    try {
+      selection = JSON.parse(rawSelection);
+    } catch (error) {
+      console.error('The saved map location selection is invalid.', error);
+      return;
+    }
+    const latitude = Number(selection.latitude);
+    const longitude = Number(selection.longitude);
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90
+        || !Number.isFinite(longitude) || longitude < -180 || longitude > 180
+        || !['gps', 'manual'].includes(selection.method)) return;
+    const accuracy = selection.accuracy !== null && selection.accuracy !== ''
+      && Number.isFinite(Number(selection.accuracy)) && Number(selection.accuracy) >= 0
+      ? Number(selection.accuracy)
+      : null;
+
+    document.getElementById('report-latitude').value = String(latitude);
+    document.getElementById('report-longitude').value = String(longitude);
+    document.getElementById('report-location-method').value = selection.method;
+    document.getElementById('report-location-accuracy').value = accuracy === null ? '' : String(accuracy);
+    document.getElementById('report-location').value = 'Map-selected location';
+    const accuracyNote = accuracy !== null
+      ? ` · accuracy ±${Math.round(accuracy)} m`
+      : '';
+    document.getElementById('report-coordinate-summary').textContent =
+      `Map location selected: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${selection.method}${accuracyNote}).`;
   },
 
   previewImage(input) {
@@ -66,6 +107,11 @@ const CitizenPortal = {
     const date = document.getElementById('report-date').value;
     const time = document.getElementById('report-time').value;
     const image = document.getElementById('report-image').files[0];
+    const latitudeInput = document.getElementById('report-latitude').value;
+    const longitudeInput = document.getElementById('report-longitude').value;
+    const accuracyInput = document.getElementById('report-location-accuracy').value;
+    const locationMethod = document.getElementById('report-location-method').value || 'none';
+    const shareCoordinates = document.getElementById('report-share-location-consent').checked;
     const zone = DataStore.getZones().find(item => item.id === zoneId);
 
     if (!zone) throw new Error('Select a valid municipal zone.');
@@ -88,6 +134,10 @@ const CitizenPortal = {
       zoneId,
       zoneName: zone.name,
       location,
+      latitude: latitudeInput === '' ? null : Number(latitudeInput),
+      longitude: longitudeInput === '' ? null : Number(longitudeInput),
+      locationAccuracy: accuracyInput === '' ? null : Number(accuracyInput),
+      locationMethod: latitudeInput === '' || longitudeInput === '' ? 'none' : locationMethod,
       date,
       time,
       createdAt,
@@ -104,7 +154,14 @@ const CitizenPortal = {
     let imageBackendError = null;
     let backendResponse = null;
     try {
-      backendResponse = await DataStore.submitToBackend(report);
+      const backendReport = { ...report };
+      if (!shareCoordinates) {
+        backendReport.latitude = null;
+        backendReport.longitude = null;
+        backendReport.locationAccuracy = null;
+        backendReport.locationMethod = 'none';
+      }
+      backendResponse = await DataStore.submitToBackend(backendReport);
       if (backendResponse?.complaint?.id) {
         reportId = backendResponse.complaint.id;
         report.id = reportId;
@@ -132,6 +189,11 @@ const CitizenPortal = {
     document.getElementById('report-date').value = this.formatDate(new Date());
     document.getElementById('report-time').value = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
     document.getElementById('report-image-preview').hidden = true;
+    document.getElementById('report-latitude').value = '';
+    document.getElementById('report-longitude').value = '';
+    document.getElementById('report-location-accuracy').value = '';
+    document.getElementById('report-location-method').value = 'none';
+    document.getElementById('report-coordinate-summary').textContent = 'No map coordinates selected. Address-only reports are still accepted.';
     this.showConfirmationModal(reportId, report);
     this.renderUserHistory();
     if (backendError) {

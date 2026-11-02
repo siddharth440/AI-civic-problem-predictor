@@ -132,6 +132,22 @@
                 <input type="text" id="report-location" class="form-control" placeholder="e.g. Near Factory Gate 3, Sector 12 Main Road" required>
               </div>
 
+              <div class="report-location-selection">
+                <a class="btn btn-outline btn-sm" href="map.html?from=citizen">
+                  <i class="fas fa-map-location-dot"></i> Choose report location on map
+                </a>
+                <p id="report-coordinate-summary" role="status">No map coordinates selected. Address-only reports are still accepted.</p>
+                <input type="hidden" id="report-latitude">
+                <input type="hidden" id="report-longitude">
+                <input type="hidden" id="report-location-accuracy">
+                <input type="hidden" id="report-location-method" value="none">
+              </div>
+
+              <label class="location-share-consent">
+                <input type="checkbox" id="report-share-location-consent">
+                <span>Allow exact report coordinates to be sent to the configured shared civic service. If unchecked, coordinates are saved only in this browser.</span>
+              </label>
+
               <div class="form-group">
                 <label class="form-label" for="report-desc">Problem Description *</label>
                 <textarea id="report-desc" class="form-control" placeholder="Describe the civic issue in detail (e.g. size of pothole, water flow rate, duration)..." required></textarea>
@@ -238,6 +254,6 @@
   <script src="js/data.js?v=20261102"></script>
   <script src="js/prediction.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/citizen.js?v=20261102"></script>
+  <script src="js/citizen.js?v=20261102-location"></script>
 </body>
 </html>
