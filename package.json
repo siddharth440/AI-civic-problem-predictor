@@ -1,0 +1,16 @@
+{
+  "name": "ai-civic-problem-predictor",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Optional Express API for the static AI Civic Problem Predictor",
+  "engines": {
+    "node": ">=20.6"
+  },
+  "scripts": {
+    "start": "node --env-file=.env backend/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

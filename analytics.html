@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Chart.js CDN for static standard analytics charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body id="analytics-page">
   <div class="app-container">
@@ -25,6 +26,7 @@
         <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home Page</a>
         <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
         <a href="citizen.html" class="nav-item"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="tracking.html" class="nav-item"><i class="fas fa-magnifying-glass"></i> Track Complaint</a>
         <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
         <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
         <a href="analytics.html" class="nav-item active"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
@@ -65,7 +67,7 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">Performance & Trend Analytics</h2>
-            <p class="section-subtitle">Comparative metrics evaluating proactive prevention vs traditional complaint management</p>
+            <p class="section-subtitle">Charts and metrics are calculated from complaints stored in this browser.</p>
           </div>
         </div>
 
@@ -74,28 +76,45 @@
           <div class="stat-card">
             <div class="stat-icon-wrapper green"><i class="fas fa-shield-heart"></i></div>
             <div class="stat-info">
-              <span class="stat-value" id="analytics-prevented-count">89</span>
-              <span class="stat-label">Prevented Major Incidents</span>
+              <span class="stat-value" id="analytics-prevented-count">0</span>
+              <span class="stat-label">Prevented Complaints</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon-wrapper blue"><i class="fas fa-clock"></i></div>
             <div class="stat-info">
-              <span class="stat-value" id="analytics-avg-response">4.2 hrs</span>
-              <span class="stat-label">Average Response Time</span>
+              <span class="stat-value" id="analytics-avg-response">—</span>
+              <span class="stat-label">Average Resolution Time</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon-wrapper purple"><i class="fas fa-bullseye"></i></div>
             <div class="stat-info">
-              <span class="stat-value" id="analytics-accuracy">91.4%</span>
-              <span class="stat-label">Prediction Precision</span>
+              <span class="stat-value" id="analytics-accuracy">0%</span>
+              <span class="stat-label">Resolution Rate</span>
             </div>
           </div>
         </div>
 
+        <div class="card analytics-filters">
+          <p class="data-mode-note">Seeded sample complaints are included in charts and marked DEMO in the authority dashboard. They are illustrative, not verified civic data.</p>
+          <label class="form-group">From <input id="analytics-from" class="form-control" type="date"></label>
+          <label class="form-group">To <input id="analytics-to" class="form-control" type="date"></label>
+          <label class="form-group">Category
+            <select id="analytics-category" class="form-control"><option value="">All categories</option></select>
+          </label>
+          <label class="form-group">Zone
+            <select id="analytics-zone" class="form-control"><option value="">All zones</option></select>
+          </label>
+          <label class="form-group">Trend interval
+            <select id="analytics-interval" class="form-control"><option value="day">Daily</option><option value="week">Weekly</option></select>
+          </label>
+          <button type="button" class="btn btn-secondary" id="analytics-export-csv"><i class="fas fa-file-csv"></i> Export CSV</button>
+          <button type="button" class="btn btn-outline" id="analytics-export-pdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
+
         <!-- Analytics Charts Grid -->
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="analytics-chart-grid">
           <!-- Line Chart: Complaints vs AI Predictions -->
           <div class="card">
             <div class="card-header">
@@ -103,6 +122,17 @@
             </div>
             <div style="position: relative; height: 280px; width: 100%;">
               <canvas id="chart-time-trend"></canvas>
+            </div>
+          </div>
+
+          <div class="analytics-chart-grid">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Resolved vs Open Complaints</h3></div>
+              <div class="analytics-chart-height"><canvas id="chart-status-breakdown"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Complaint Priority</h3></div>
+              <div class="analytics-chart-height"><canvas id="chart-priority-breakdown"></canvas></div>
             </div>
           </div>
 
@@ -130,6 +160,7 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/prediction.js"></script>
   <script src="js/app.js"></script>

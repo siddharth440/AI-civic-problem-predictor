@@ -8,7 +8,7 @@
   <!-- FontAwesome Icons via CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body id="home-page">
   <div class="app-container">
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
@@ -24,6 +24,7 @@
         <a href="index.html" class="nav-item active"><i class="fas fa-home"></i> Home Page</a>
         <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
         <a href="citizen.html" class="nav-item"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="tracking.html" class="nav-item"><i class="fas fa-magnifying-glass"></i> Track Complaint</a>
         <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
         <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
         <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
@@ -64,12 +65,12 @@
       <main class="page-content">
         <!-- Hero Section -->
         <section class="hero-section">
-          <div class="badge badge-risk-low" style="margin-bottom: 1rem; font-size: 0.8rem;">
-            <i class="fas fa-sparkles"></i> Proactive Civic Infrastructure Protection
+          <div class="badge badge-risk-medium" style="margin-bottom: 1rem; font-size: 0.8rem;">
+            <i class="fas fa-flask"></i> AI-Assisted Risk Scoring Prototype · Demo Data
           </div>
           <h1 class="hero-title">Predict Civic Problems Before They Become Emergencies</h1>
           <p class="hero-subtitle">
-            AI-powered predictive intelligence for proactive municipal management. "Don't wait for citizens to report a civic problem — predict where the next issue is likely to occur and prevent it."
+            A transparent, AI-assisted risk scoring prototype for civic operations. It analyzes stored complaints and configurable demo estimates; it does not use a trained machine-learning model.
           </p>
           <div class="hero-ctas">
             <a href="dashboard.html" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
@@ -89,33 +90,33 @@
           <div class="stat-card">
             <div class="stat-icon-wrapper blue"><i class="fas fa-bullseye"></i></div>
             <div class="stat-info">
-              <span class="stat-value">124</span>
-              <span class="stat-label">Civic Problems Predicted</span>
-              <span class="stat-trend down"><i class="fas fa-arrow-down"></i> 42% Incident Reduction</span>
+              <span class="stat-value" id="home-total-reports">0</span>
+              <span class="stat-label">Complaints in this browser</span>
+              <span class="stat-trend">Local records only</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon-wrapper red"><i class="fas fa-triangle-exclamation"></i></div>
             <div class="stat-info">
-              <span class="stat-value">4</span>
+              <span class="stat-value" id="home-high-risk-zones">0</span>
               <span class="stat-label">High-Risk Zones Flagged</span>
-              <span class="stat-trend up"><i class="fas fa-exclamation-circle"></i> Requires Intervention</span>
+              <span class="stat-trend up"><i class="fas fa-exclamation-circle"></i> Prototype risk score</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon-wrapper green"><i class="fas fa-shield-check"></i></div>
             <div class="stat-info">
-              <span class="stat-value">89</span>
-              <span class="stat-label">Prevented Emergencies</span>
-              <span class="stat-trend down"><i class="fas fa-check"></i> Clean Track Record</span>
+              <span class="stat-value" id="home-prevented">0</span>
+              <span class="stat-label">Marked as Prevented</span>
+              <span class="stat-trend">Based on stored records</span>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon-wrapper purple"><i class="fas fa-clock-rotate-left"></i></div>
             <div class="stat-info">
-              <span class="stat-value">4.2h</span>
-              <span class="stat-label">Avg Response Time</span>
-              <span class="stat-trend down"><i class="fas fa-bolt"></i> 70% Faster Response</span>
+              <span class="stat-value" id="home-response-time">—</span>
+              <span class="stat-label">Average Resolution Time</span>
+              <span class="stat-trend">Requires resolution timestamps</span>
             </div>
           </div>
         </div>
@@ -170,15 +171,15 @@
 
             <div class="flow-step">
               <div class="flow-step-num">2</div>
-              <h4 style="font-size:0.95rem; font-weight:700;">AI Pattern Analysis</h4>
-              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Explainable multi-indicator weighted score matrix</p>
+              <h4 style="font-size:0.95rem; font-weight:700;">Weighted Risk Analysis</h4>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Explainable rules-based score matrix, not trained ML</p>
             </div>
             <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
 
             <div class="flow-step">
               <div class="flow-step-num">3</div>
               <h4 style="font-size:0.95rem; font-weight:700;">Risk Classification</h4>
-              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Zone risk scores (0–100%) & confidence mapping</p>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.3rem;">Zone risk scores from 0–100 with visible contributing factors</p>
             </div>
             <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
 
@@ -217,9 +218,9 @@
 
             <div class="feature-card">
               <div class="feature-icon"><i class="fas fa-map-location-dot"></i></div>
-              <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Interactive SVG Heatmap</h3>
+              <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Interactive Schematic Risk Map</h3>
               <p style="font-size:0.875rem; color:var(--text-secondary);">
-                Dynamic vector city map highlighting 6 municipal zones with real-time risk color coding and deep-dive drawer.
+                Leaflet schematic showing six configured zones. Shapes and marker positions are simulated, not municipal boundaries or geocoded locations.
               </p>
             </div>
 
@@ -235,7 +236,7 @@
               <div class="feature-icon"><i class="fas fa-bolt"></i></div>
               <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Live Simulation Telemetry</h3>
               <p style="font-size:0.875rem; color:var(--text-secondary);">
-                Simulate real-time sensor updates, weather pulses, and automatic alert notifications in demo mode.
+                Generate clearly labeled demo alerts; no live sensor or weather feeds are connected.
               </p>
             </div>
           </div>
@@ -244,6 +245,7 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/prediction.js"></script>
   <script src="js/app.js"></script>

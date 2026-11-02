@@ -1,151 +1,130 @@
 /*
-  AI Civic Problem Predictor - Explainable Risk Calculation Engine
-  Smart India Hackathon (SIH) Prototype
-  
-  Note: This JavaScript-based engine simulates an AI prediction model using
-  weighted multi-factor historical & environmental indicators.
-  Formula:
-    Risk Score = (Historical Complaints * 0.30) + 
-                 (Recent Complaint Surge * 0.20) + 
-                 (Weather/Rainfall Index * 0.15) + 
-                 (Previous Incidents * 0.15) + 
-                 (Population Activity * 0.10) + 
-                 (Service Delay Factor * 0.10)
+  Transparent, explainable civic risk scoring prototype.
+  This weighted heuristic is not a trained machine-learning model.
 */
 
 const PredictionEngine = {
-  ENGINE_NAME: "AI Prediction Engine Prototype v2.4",
-  METHODOLOGY: "Multi-indicator Weighted Risk Matrix & Predictive Time-Series Heuristics",
+  ENGINE_NAME: 'AI-assisted civic risk scoring prototype',
+  METHODOLOGY: 'Weighted rules using complaint volume, severity, history, density, vulnerability, trends, and unresolved reports',
 
-  /**
-   * Calculate civic risk score for a target zone or dataset
-   * @param {Object} inputData
-   *   - historicalComplaintsCount: number (0-100 scale)
-   *   - recentSurgePercent: number (0-100 scale)
-   *   - weatherRainfallMm: number (0-100 scale)
-   *   - previousIncidentsCount: number (0-100 scale)
-   *   - populationDensityIndex: number (0-100 scale)
-   *   - daysSinceLastService: number (0-100 scale)
-   */
-  calculateRiskScore(inputData) {
-    const rawHist = Math.min(100, Math.max(0, inputData.historicalComplaintsCount || 40));
-    const rawSurge = Math.min(100, Math.max(0, inputData.recentSurgePercent || 35));
-    const rawWeather = Math.min(100, Math.max(0, inputData.weatherRainfallMm || 30));
-    const rawIncidents = Math.min(100, Math.max(0, inputData.previousIncidentsCount || 45));
-    const rawPop = Math.min(100, Math.max(0, inputData.populationDensityIndex || 50));
-    const rawService = Math.min(100, Math.max(0, inputData.daysSinceLastService || 60));
+  classifyRisk(score) {
+    if (score >= 75) return 'Critical';
+    if (score >= 50) return 'High';
+    if (score >= 25) return 'Medium';
+    return 'Low';
+  },
 
-    // Calculate weighted points (Total max = 100)
-    const pointsHist = Math.round(rawHist * 0.30);      // Max 30 pts
-    const pointsSurge = Math.round(rawSurge * 0.20);    // Max 20 pts
-    const pointsWeather = Math.round(rawWeather * 0.15); // Max 15 pts
-    const pointsIncidents = Math.round(rawIncidents * 0.15); // Max 15 pts
-    const pointsPop = Math.round(rawPop * 0.10);        // Max 10 pts
-    const pointsService = Math.round(rawService * 0.10);  // Max 10 pts
-
-    const totalRiskScore = Math.min(100, pointsHist + pointsSurge + pointsWeather + pointsIncidents + pointsPop + pointsService);
-
-    // Risk level classification
-    let riskLevel = 'Low';
-    let riskClass = 'badge-risk-low';
-    if (totalRiskScore >= 76) {
-      riskLevel = 'Critical';
-      riskClass = 'badge-risk-critical';
-    } else if (totalRiskScore >= 51) {
-      riskLevel = 'High';
-      riskClass = 'badge-risk-high';
-    } else if (totalRiskScore >= 26) {
-      riskLevel = 'Medium';
-      riskClass = 'badge-risk-medium';
-    }
-
-    // Calculate prediction confidence (Higher sample size / consistent signals = higher confidence)
-    const confidence = Math.min(96, Math.max(75, 78 + Math.round((pointsHist + pointsSurge) * 0.2)));
-
-    // Generate predicted problem type based on dominant vector
-    let predictedProblem = "Garbage Accumulation";
-    let recommendedAction = "Schedule additional municipal waste collection shift.";
-    let timeframe = "Within 48–72 hours";
-
-    if (rawWeather > 65 || rawIncidents > 70) {
-      predictedProblem = "Stormwater Drainage & Flooding Overflow";
-      recommendedAction = "Inspect storm drain grates, clear debris, and deploy mobile hydro-vac pumps.";
-      timeframe = "Within 24–48 hours";
-    } else if (rawHist > 70 && rawService > 60) {
-      predictedProblem = "Severe Road Pothole & Subbase Erosion";
-      recommendedAction = "Deploy road maintenance unit for rapid asphalt patching and soil stabilization.";
-      timeframe = "Within 3–5 days";
-    } else if (rawSurge > 65) {
-      predictedProblem = "Main Water Distribution Pipe Rupture";
-      recommendedAction = "Conduct acoustic pressure telemetry check and inspect pressure reduction valves.";
-      timeframe = "Within 24–36 hours";
-    }
-
+  calculateRiskScore(factors) {
+    const weights = [
+      { key: 'complaintFrequency', name: 'Complaint frequency', weight: 0.25, max: 25 },
+      { key: 'severity', name: 'Complaint severity', weight: 0.20, max: 20 },
+      { key: 'historicalIncidents', name: 'Historical incident estimate', weight: 0.15, max: 15 },
+      { key: 'populationDensity', name: 'Estimated population density', weight: 0.10, max: 10 },
+      { key: 'infrastructureVulnerability', name: 'Estimated infrastructure vulnerability', weight: 0.15, max: 15 },
+      { key: 'recentTrend', name: 'Recent complaint trend', weight: 0.10, max: 10 },
+      { key: 'unresolvedComplaints', name: 'Unresolved complaints', weight: 0.05, max: 5 }
+    ];
+    const breakdown = weights.map(item => {
+      const input = Number(factors[item.key]);
+      const normalized = Number.isFinite(input) ? Math.min(100, Math.max(0, input)) : 0;
+      const points = Math.round(normalized * item.weight);
+      return { name: item.name, points, max: item.max, value: normalized };
+    });
+    const riskScore = Math.min(100, breakdown.reduce((sum, item) => sum + item.points, 0));
     return {
-      riskScore: totalRiskScore,
-      riskLevel: riskLevel,
-      riskClass: riskClass,
-      confidence: confidence,
-      predictedProblem: predictedProblem,
-      recommendedAction: recommendedAction,
-      timeframe: timeframe,
-      factorBreakdown: [
-        { name: 'Historical Complaints (30%)', points: pointsHist, max: 30, pct: Math.round((pointsHist/30)*100) },
-        { name: 'Recent Complaint Surge (20%)', points: pointsSurge, max: 20, pct: Math.round((pointsSurge/20)*100) },
-        { name: 'Weather / Rainfall Risk (15%)', points: pointsWeather, max: 15, pct: Math.round((pointsWeather/15)*100) },
-        { name: 'Previous Incident Record (15%)', points: pointsIncidents, max: 15, pct: Math.round((pointsIncidents/15)*100) },
-        { name: 'Population & Activity (10%)', points: pointsPop, max: 10, pct: Math.round((pointsPop/10)*100) },
-        { name: 'Service Delay Factor (10%)', points: pointsService, max: 10, pct: Math.round((pointsService/10)*100) }
-      ],
-      engineMeta: {
-        name: this.ENGINE_NAME,
-        methodology: this.METHODOLOGY
-      }
+      riskScore,
+      riskLevel: this.classifyRisk(riskScore),
+      factorBreakdown: breakdown
     };
   },
 
-  /**
-   * Recalculate dynamic predictions for all municipal zones
-   */
   recalculateAllZonePredictions() {
     const zones = DataStore.getZones();
     const reports = DataStore.getReports();
-    
-    return zones.map(zone => {
-      const zoneReports = reports.filter(r => r.zoneId === zone.id);
-      const recentSurge = zoneReports.filter(r => r.severity === 'Critical' || r.severity === 'High').length * 15;
-      
-      const input = {
-        historicalComplaintsCount: zone.complaintCount,
-        recentSurgePercent: Math.min(100, recentSurge + 20),
-        weatherRainfallMm: zone.weatherRisk === 'Heavy Rain' ? 85 : (zone.weatherRisk === 'Moderate' ? 50 : 25),
-        previousIncidentsCount: zoneReports.length * 8,
-        populationDensityIndex: Math.round((zone.population / 175000) * 100),
-        daysSinceLastService: zone.serviceFreq === 'Monthly' ? 80 : (zone.serviceFreq === 'Bi-weekly' ? 50 : 25)
-      };
+    const now = Date.now();
+    const openStatuses = ['Submitted', 'Under Review', 'Assigned', 'In Progress'];
 
+    return zones.map(zone => {
+      const zoneReports = reports.filter(report => report.zoneId === zone.id);
+      const recentReports = zoneReports.filter(report => {
+        const submitted = new Date(report.createdAt || report.date).getTime();
+        return Number.isFinite(submitted) && now - submitted <= 30 * 24 * 60 * 60 * 1000;
+      });
+      const unresolved = zoneReports.filter(report => openStatuses.includes(report.status));
+      const repeatedCategories = zoneReports.reduce((counts, report) => {
+        const category = report.category || 'Other';
+        counts[category] = (counts[category] || 0) + 1;
+        return counts;
+      }, {});
+      const dominantCategory = Object.entries(repeatedCategories)
+        .sort((a, b) => b[1] - a[1])[0]?.[0];
+      const severityValues = { Low: 20, Medium: 45, High: 75, Critical: 100 };
+      const averageSeverity = zoneReports.length
+        ? zoneReports.reduce((total, report) => total + (severityValues[report.severity || report.priority] || 35), 0) / zoneReports.length
+        : 0;
+      const historicalEstimate = Math.min(100, Number(zone.complaintCount || 0) * 1.1);
+      const recentTrend = Math.min(100, recentReports.length * 20);
+      const input = {
+        complaintFrequency: Math.min(100, zoneReports.length * 12 + recentReports.length * 8),
+        severity: averageSeverity,
+        historicalIncidents: historicalEstimate,
+        populationDensity: Math.min(100, Math.round((Number(zone.population) || 0) / 1750)),
+        infrastructureVulnerability: Number(zone.infrastructureVulnerability) || (zone.serviceFreq === 'Monthly' ? 85 : zone.serviceFreq === 'Bi-monthly' ? 75 : 45),
+        recentTrend,
+        unresolvedComplaints: Math.min(100, unresolved.length * 20)
+      };
       const result = this.calculateRiskScore(input);
-      
+      const recommendations = {
+        'Water Leakage': 'Inspect the local water main and check for pressure loss.',
+        'Drainage Problems': 'Inspect nearby storm drains and remove obstructions.',
+        'Flood Risk': 'Check drainage capacity and prepare a localized flood response.',
+        'Road Damage': 'Inspect the affected road surface and prioritize a safety repair.',
+        'Garbage Overflow': 'Schedule collection and inspect the nearest waste container.',
+        'Street Light Failure': 'Inspect the street-light circuit and replace failed fixtures.',
+        'Traffic Congestion': 'Review signal timing and monitor the affected intersection.',
+        'Public Safety': 'Escalate the report to the appropriate public-safety team.',
+        Other: 'Review recent reports and schedule a field inspection.'
+      };
+      const category = dominantCategory || this.inferCategory(zone);
+      const reasons = result.factorBreakdown
+        .filter(factor => factor.points > 0)
+        .sort((a, b) => b.points - a.points)
+        .slice(0, 3)
+        .map(factor => `${factor.name}: ${factor.points}/${factor.max} points`);
+
       return {
-        id: `PRED-${zone.id.replace('zone-', '')}01`,
+        id: `PRED-${zone.id.replace('zone-', '')}`,
         zoneId: zone.id,
         zoneName: zone.name,
-        category: result.predictedProblem,
+        category,
         riskScore: result.riskScore,
         riskLevel: result.riskLevel,
-        confidence: result.confidence,
-        timeframe: result.timeframe,
-        recommendedAction: result.recommendedAction,
-        status: 'Predicted',
-        indicators: {
-          historicalComplaints: result.factorBreakdown[0].points,
-          recentSurge: result.factorBreakdown[1].points,
-          weatherFactor: result.factorBreakdown[2].points,
-          incidentHistory: result.factorBreakdown[3].points,
-          populationActivity: result.factorBreakdown[4].points,
-          serviceFrequency: result.factorBreakdown[5].points
-        }
+        confidence: null,
+        timeframe: result.riskLevel === 'Critical' ? 'Immediate review' : result.riskLevel === 'High' ? 'Review within 24 hours' : 'Routine monitoring',
+        recommendedAction: recommendations[category] || recommendations.Other,
+        status: DataStore.getPredictions().find(prediction => prediction.zoneId === zone.id)?.status || 'Predicted',
+        indicators: Object.fromEntries(result.factorBreakdown.map(factor => [factor.name, factor.points])),
+        factorBreakdown: result.factorBreakdown,
+        reasons,
+        complaintCount: zoneReports.length,
+        unresolvedCount: unresolved.length
       };
     });
+  },
+
+  inferCategory(zone) {
+    if (/rain|flood/i.test(zone.weatherRisk || '')) return 'Flood Risk';
+    if (/industrial|spill/i.test(zone.name || '')) return 'Water Leakage';
+    return 'Other';
   }
 };
+
+window.addEventListener('civic-data-changed', event => {
+  if (event.detail?.type === 'predictions') return;
+  const predictions = PredictionEngine.recalculateAllZonePredictions();
+  localStorage.setItem(STORAGE_KEYS.PREDICTIONS, JSON.stringify(predictions));
+  window.dispatchEvent(new CustomEvent('civic-data-changed', { detail: { type: 'predictions' } }));
+});
+
+const initialPredictions = PredictionEngine.recalculateAllZonePredictions();
+localStorage.setItem(STORAGE_KEYS.PREDICTIONS, JSON.stringify(initialPredictions));

@@ -1,124 +1,194 @@
-/*
-  AI Civic Problem Predictor - Citizen Reporting Portal Controller
-  Smart India Hackathon (SIH) Prototype
-*/
-
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('citizen-page')) {
-    CitizenPortal.init();
-  }
+  if (document.getElementById('citizen-page')) CitizenPortal.init();
 });
 
 const CitizenPortal = {
   init() {
     this.initForm();
     this.renderUserHistory();
+    window.addEventListener('civic-data-changed', () => this.renderUserHistory());
   },
 
   initForm() {
     const form = document.getElementById('citizen-report-form');
     if (!form) return;
 
-    // Set default date to today
+    const now = new Date();
     const dateInput = document.getElementById('report-date');
-    if (dateInput) {
-      dateInput.value = new Date().toISOString().split('T')[0];
-    }
+    const timeInput = document.getElementById('report-time');
+    dateInput.value = this.formatDate(now);
+    timeInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      this.handleSubmit(form);
+    const imageInput = document.getElementById('report-image');
+    imageInput.addEventListener('change', () => this.previewImage(imageInput));
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      this.handleSubmit(form).catch(error => {
+        console.error('Complaint submission failed.', error);
+        App.showToast(error.message || 'The complaint could not be saved. Please try again.', 'error');
+      });
     });
   },
 
-  handleSubmit(form) {
+  formatDate(date) {
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return localDate.toISOString().slice(0, 10);
+  },
+
+  previewImage(input) {
+    const preview = document.getElementById('report-image-preview');
+    const file = input.files[0];
+    if (!file) {
+      preview.hidden = true;
+      preview.removeAttribute('src');
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      input.value = '';
+      preview.hidden = true;
+      App.showToast('Choose a JPG, PNG, or WebP image up to 5 MB.', 'error');
+      return;
+    }
+    preview.src = URL.createObjectURL(file);
+    preview.hidden = false;
+  },
+
+  async handleSubmit(form) {
+    if (!form.reportValidity()) return;
+
     const name = document.getElementById('report-name').value.trim();
     const category = document.getElementById('report-category').value;
+    const title = document.getElementById('report-title').value.trim();
     const description = document.getElementById('report-desc').value.trim();
     const zoneId = document.getElementById('report-zone').value;
     const location = document.getElementById('report-location').value.trim();
-    const severity = document.getElementById('report-severity').value;
+    const priority = document.getElementById('report-severity').value;
     const date = document.getElementById('report-date').value;
+    const time = document.getElementById('report-time').value;
+    const image = document.getElementById('report-image').files[0];
+    const zone = DataStore.getZones().find(item => item.id === zoneId);
 
-    // Form Validation
-    if (!name || !category || !description || !zoneId || !location) {
-      App.showToast('Please complete all required fields.', 'error');
-      return;
+    if (!zone) throw new Error('Select a valid municipal zone.');
+    if (new Date(`${date}T${time}`) > new Date()) throw new Error('Incident date and time cannot be in the future.');
+
+    let imageId = null;
+    if (image) {
+      imageId = DataStore.createId('IMG');
+      await DataStore.storeImage(imageId, image);
     }
 
-    // Generate unique Report ID
-    const reportId = 'REP-' + Math.floor(8510 + Math.random() * 890);
-
-    const newReport = {
+    const reportId = DataStore.createId('CMP');
+    const createdAt = new Date().toISOString();
+    const report = {
       id: reportId,
-      name: name,
-      category: category,
-      zoneId: zoneId,
-      location: `${zoneId.replace('zone-', 'Zone ')} - ${location}`,
-      description: description,
-      severity: severity,
-      date: date,
-      status: 'Assigned',
-      image: 'assets/images/placeholder.jpg'
+      name,
+      title,
+      category,
+      description,
+      zoneId,
+      zoneName: zone.name,
+      location,
+      date,
+      time,
+      createdAt,
+      priority,
+      severity: priority,
+      status: 'Submitted',
+      department: this.departmentFor(category),
+      imageId,
+      isDemo: false,
+      history: [{ status: 'Submitted', at: createdAt, note: 'Complaint received.' }]
     };
 
-    // Save to LocalStorage Data Store
-    DataStore.addReport(newReport);
+    let backendError = null;
+    let imageBackendError = null;
+    let backendResponse = null;
+    try {
+      backendResponse = await DataStore.submitToBackend(report);
+    } catch (error) {
+      backendError = error;
+    }
+    if (backendResponse && image) {
+      try {
+        await DataStore.uploadImageToBackend(reportId, image);
+      } catch (error) {
+        imageBackendError = error;
+      }
+    }
+    if (backendResponse) report.source = 'backend';
 
-    // Trigger AI prediction recalculation for the affected zone
-    const predictions = PredictionEngine.recalculateAllZonePredictions();
-    predictions.forEach(p => DataStore.updatePrediction(p));
+    try {
+      await DataStore.addReport(report);
+    } catch (error) {
+      if (!DataStore.getReports().some(item => item.id === reportId)) throw error;
+      App.showToast('Complaint is saved in this browser, but IndexedDB backup failed. Export a backup before clearing site data.', 'warning');
+    }
 
-    // Reset Form
     form.reset();
-    document.getElementById('report-date').value = new Date().toISOString().split('T')[0];
-
-    // Show Confirmation Modal / Toast
-    this.showConfirmationModal(reportId, newReport);
+    document.getElementById('report-date').value = this.formatDate(new Date());
+    document.getElementById('report-time').value = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
+    document.getElementById('report-image-preview').hidden = true;
+    this.showConfirmationModal(reportId, report);
     this.renderUserHistory();
-    App.showToast(`Report ${reportId} submitted & risk matrix updated!`, 'success');
+    if (backendError) {
+      App.showToast(`Backend unavailable; complaint ${reportId} was saved only in this browser. ${backendError.message}`, 'warning');
+    } else if (imageBackendError) {
+      App.showToast(`Complaint ${reportId} was submitted to the backend, but its photo remains only in this browser. ${imageBackendError.message}`, 'warning');
+    } else {
+      App.showToast(`Complaint ${reportId} submitted. Save this ID to track updates.`, 'success');
+    }
+  },
+
+  departmentFor(category) {
+    if (category.includes('Water') || category.includes('Drainage') || category.includes('Flood')) return 'Water & Drainage';
+    if (category.includes('Road') || category.includes('Traffic')) return 'Roads & Transport';
+    if (category.includes('Garbage')) return 'Sanitation';
+    if (category.includes('Light')) return 'Electrical Services';
+    if (category.includes('Safety')) return 'Public Safety';
+    return 'Civic Services';
   },
 
   showConfirmationModal(reportId, report) {
     const modal = document.getElementById('submission-success-modal');
-    if (modal) {
-      document.getElementById('modal-report-id').textContent = reportId;
-      document.getElementById('modal-report-zone').textContent = report.location;
-      document.getElementById('modal-report-cat').textContent = report.category;
-      modal.classList.add('active');
-    }
+    document.getElementById('modal-report-id').textContent = reportId;
+    document.getElementById('modal-report-zone').textContent = `${report.zoneName} - ${report.location}`;
+    document.getElementById('modal-report-cat').textContent = report.category;
+    document.getElementById('modal-track-link').href = `tracking.html?id=${encodeURIComponent(reportId)}`;
+    modal.classList.add('active');
   },
 
   renderUserHistory() {
     const container = document.getElementById('citizen-history-list');
     if (!container) return;
-
     const reports = DataStore.getReports().slice(0, 6);
-    container.innerHTML = '';
+    container.replaceChildren();
 
-    if (reports.length === 0) {
-      container.innerHTML = '<p style="color:var(--text-muted);">No reports submitted yet.</p>';
+    if (!reports.length) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state';
+      empty.textContent = 'No complaints submitted yet.';
+      container.appendChild(empty);
       return;
     }
 
-    reports.forEach(rep => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.style.padding = '1rem 1.25rem';
-      card.style.marginBottom = '0.75rem';
-
-      card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-          <span style="font-weight:700; font-size:0.9rem; color:var(--accent-primary);"><code>${rep.id}</code></span>
-          <span class="badge ${rep.status === 'Resolved' || rep.status === 'Prevented' ? 'badge-risk-low' : 'badge-risk-high'}">${rep.status}</span>
-        </div>
-        <div style="font-weight:600; font-size:0.95rem;">${rep.category} - <span style="font-weight:400; color:var(--text-secondary);">${rep.location}</span></div>
-        <p style="font-size:0.825rem; color:var(--text-secondary); margin-top:0.3rem;">${rep.description}</p>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem; display:flex; justify-content:space-between;">
-          <span>Submitted on ${rep.date}</span>
-          <span>Severity: <strong>${rep.severity}</strong></span>
-        </div>
-      `;
+    reports.forEach(report => {
+      const card = document.createElement('article');
+      card.className = 'card complaint-history-card';
+      const header = document.createElement('div');
+      header.className = 'complaint-history-header';
+      const id = document.createElement('strong');
+      id.textContent = report.id;
+      const status = document.createElement('span');
+      status.className = 'badge badge-risk-medium';
+      status.textContent = report.isDemo ? `Demo · ${report.status}` : report.status;
+      const title = document.createElement('h4');
+      title.textContent = report.title || report.category;
+      const details = document.createElement('p');
+      details.textContent = `${report.category} · ${report.location}`;
+      const date = document.createElement('small');
+      date.textContent = `Submitted ${report.date || ''} ${report.time || ''}`;
+      header.append(id, status);
+      card.append(header, title, details, date);
       container.appendChild(card);
     });
   }

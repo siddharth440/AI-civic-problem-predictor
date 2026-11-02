@@ -1,12 +1,5 @@
-/*
-  AI Civic Problem Predictor - AI Prediction Engine Dashboard Controller
-  Smart India Hackathon (SIH) Prototype
-*/
-
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('predictions-page')) {
-    PredictionsDashboard.init();
-  }
+  if (document.getElementById('predictions-page')) PredictionsDashboard.init();
 });
 
 const PredictionsDashboard = {
@@ -14,170 +7,162 @@ const PredictionsDashboard = {
   currentSortOption: 'risk-desc',
 
   init() {
-    this.renderPredictions();
     this.initFilters();
     this.initSort();
-
-    window.onLiveSimUpdate = () => {
-      this.renderPredictions();
-    };
+    document.getElementById('predictions-cards-grid')?.addEventListener('click', event => {
+      const button = event.target.closest('[data-explanation-id]');
+      if (button) this.showExplanationModal(button.dataset.explanationId);
+    });
+    window.addEventListener('civic-data-changed', () => this.renderPredictions());
+    window.onLiveSimUpdate = () => this.renderPredictions();
+    this.renderPredictions();
   },
 
   initFilters() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        filterButtons.forEach(b => b.classList.remove('active', 'btn-primary'));
-        filterButtons.forEach(b => b.classList.add('btn-secondary'));
-        
-        btn.classList.remove('btn-secondary');
-        btn.classList.add('active', 'btn-primary');
-
-        this.currentCategoryFilter = btn.getAttribute('data-category');
-        this.renderPredictions();
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(button => button.addEventListener('click', () => {
+      buttons.forEach(item => {
+        item.classList.remove('active', 'btn-primary');
+        item.classList.add('btn-secondary');
       });
-    });
+      button.classList.add('active', 'btn-primary');
+      button.classList.remove('btn-secondary');
+      this.currentCategoryFilter = button.dataset.category;
+      this.renderPredictions();
+    }));
   },
 
   initSort() {
-    const sortSelect = document.getElementById('prediction-sort');
-    if (sortSelect) {
-      sortSelect.addEventListener('change', (e) => {
-        this.currentSortOption = e.target.value;
-        this.renderPredictions();
-      });
-    }
+    document.getElementById('prediction-sort')?.addEventListener('change', event => {
+      this.currentSortOption = event.target.value;
+      this.renderPredictions();
+    });
   },
 
   getProcessedPredictions() {
     let predictions = DataStore.getPredictions();
-
-    // Apply Category Filter
+    const aliases = {
+      Garbage: /garbage|waste/i,
+      Pothole: /pothole|road damage/i,
+      Water: /water/i,
+      Drainage: /drainage/i,
+      Flooding: /flood/i,
+      Streetlight: /street.?light/i
+    };
     if (this.currentCategoryFilter !== 'All') {
-      predictions = predictions.filter(p => p.category.toLowerCase().includes(this.currentCategoryFilter.toLowerCase()));
+      const matcher = aliases[this.currentCategoryFilter] || new RegExp(this.currentCategoryFilter, 'i');
+      predictions = predictions.filter(prediction => matcher.test(prediction.category));
     }
-
-    // Apply Sorting
-    predictions.sort((a, b) => {
-      if (this.currentSortOption === 'risk-desc') return b.riskScore - a.riskScore;
+    return predictions.sort((a, b) => {
       if (this.currentSortOption === 'risk-asc') return a.riskScore - b.riskScore;
-      if (this.currentSortOption === 'confidence-desc') return b.confidence - a.confidence;
-      if (this.currentSortOption === 'newest') return b.id.localeCompare(a.id);
-      return 0;
+      if (this.currentSortOption === 'confidence-desc') return b.complaintCount - a.complaintCount;
+      return b.riskScore - a.riskScore;
     });
-
-    return predictions;
   },
 
   renderPredictions() {
     const container = document.getElementById('predictions-cards-grid');
     if (!container) return;
-
+    container.replaceChildren();
     const predictions = this.getProcessedPredictions();
-    container.innerHTML = '';
-
-    if (predictions.length === 0) {
-      container.innerHTML = `
-        <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-muted);">
-          <i class="fas fa-search" style="font-size:2.5rem; margin-bottom:1rem; opacity:0.5;"></i>
-          <p>No AI predictions matching the selected filter criteria.</p>
-        </div>
-      `;
+    if (!predictions.length) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state';
+      empty.textContent = 'No risk scores match the selected category.';
+      container.appendChild(empty);
       return;
     }
+    predictions.forEach(prediction => {
+      const level = prediction.riskLevel.toLowerCase();
+      const card = document.createElement('article');
+      card.className = `prediction-card ${level}`;
+      const header = document.createElement('div');
+      header.className = 'prediction-card-header';
+      const identity = document.createElement('div');
+      const category = document.createElement('h3');
+      category.className = 'prediction-title';
+      category.textContent = prediction.category;
+      const zone = document.createElement('div');
+      zone.className = 'prediction-zone';
+      zone.textContent = prediction.zoneName;
+      identity.append(category, zone);
+      const badge = document.createElement('span');
+      badge.className = `badge badge-risk-${level}`;
+      badge.textContent = prediction.riskLevel;
+      header.append(identity, badge);
+      card.appendChild(header);
 
-    predictions.forEach(pred => {
-      let riskClass = 'low';
-      let badgeClass = 'badge-risk-low';
-      if (pred.riskLevel === 'Critical') { riskClass = 'critical'; badgeClass = 'badge-risk-critical'; }
-      else if (pred.riskLevel === 'High') { riskClass = 'high'; badgeClass = 'badge-risk-high'; }
-      else if (pred.riskLevel === 'Medium') { riskClass = 'medium'; badgeClass = 'badge-risk-medium'; }
+      const meter = document.createElement('div');
+      meter.className = 'risk-meter';
+      const meterLabel = document.createElement('div');
+      meterLabel.className = 'risk-meter-header';
+      meterLabel.textContent = `Risk score ${prediction.riskScore}/100`;
+      const bar = document.createElement('div');
+      bar.className = 'progress-bar-bg';
+      const fill = document.createElement('div');
+      fill.className = `progress-bar-fill ${level}`;
+      fill.style.width = `${prediction.riskScore}%`;
+      bar.appendChild(fill);
+      meter.append(meterLabel, bar);
+      card.appendChild(meter);
 
-      const card = document.createElement('div');
-      card.className = `prediction-card ${riskClass}`;
+      const count = document.createElement('p');
+      count.className = 'prediction-data-note';
+      count.textContent = `${prediction.complaintCount} stored complaint(s) · ${prediction.unresolvedCount} unresolved`;
+      card.appendChild(count);
+      const action = document.createElement('p');
+      action.className = 'prediction-action';
+      action.textContent = `Recommended review: ${prediction.recommendedAction}`;
+      card.appendChild(action);
+      const details = document.createElement('p');
+      details.className = 'prediction-data-note';
+      details.textContent = `Status: ${prediction.status} · ${prediction.timeframe}`;
+      card.appendChild(details);
 
-      card.innerHTML = `
-        <div>
-          <div class="prediction-card-header">
-            <div>
-              <div class="prediction-title">${pred.category}</div>
-              <div class="prediction-zone"><i class="fas fa-map-marker-alt"></i> ${pred.zoneName}</div>
-            </div>
-            <span class="badge ${badgeClass}">${pred.riskLevel}</span>
-          </div>
-
-          <div class="risk-meter">
-            <div class="risk-meter-header">
-              <span>Civic Risk Index</span>
-              <span style="font-weight:800; color:${riskClass === 'critical' ? '#ef4444' : '#2563eb'};">${pred.riskScore}%</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill ${riskClass}" style="width: ${pred.riskScore}%;"></div>
-            </div>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary); margin-bottom:1rem; padding:0.5rem 0; border-y:1px solid var(--border-color);">
-            <span><i class="fas fa-bullseye" style="color:var(--accent-primary);"></i> Confidence: <strong>${pred.confidence}%</strong></span>
-            <span><i class="fas fa-clock" style="color:var(--risk-medium);"></i> ${pred.timeframe}</span>
-          </div>
-
-          <div style="background:var(--bg-tertiary); padding:0.75rem; border-radius:var(--radius-sm); font-size:0.825rem; margin-bottom:1.25rem;">
-            <strong style="color:var(--text-primary); display:block; margin-bottom:0.25rem;"><i class="fas fa-shield-alt" style="color:var(--risk-low);"></i> Recommended Preventive Action:</strong>
-            <span style="color:var(--text-secondary);">${pred.recommendedAction}</span>
-          </div>
-        </div>
-
-        <button class="btn btn-outline btn-sm" style="width:100%;" onclick="PredictionsDashboard.showExplanationModal('${pred.id}')">
-          <i class="fas fa-calculator"></i> Why this prediction? (Explainable AI)
-        </button>
-      `;
-
+      const explain = document.createElement('button');
+      explain.type = 'button';
+      explain.className = 'btn btn-outline btn-sm';
+      explain.dataset.explanationId = prediction.id;
+      explain.textContent = 'Why this score?';
+      card.appendChild(explain);
       container.appendChild(card);
     });
   },
 
-  showExplanationModal(predId) {
-    const predictions = DataStore.getPredictions();
-    const target = predictions.find(p => p.id === predId);
-    if (!target) return;
-
-    const modal = document.getElementById('explanation-modal');
-    if (!modal) return;
-
-    document.getElementById('explain-title').textContent = target.category;
-    document.getElementById('explain-zone').textContent = target.zoneName;
-    document.getElementById('explain-score').textContent = `${target.riskScore}%`;
-    document.getElementById('explain-confidence').textContent = `${target.confidence}%`;
-
-    const ind = target.indicators || {};
-    const factors = [
-      { name: 'Historical Complaint Volume', pts: ind.historicalComplaints || 25, max: 30 },
-      { name: 'Recent Complaint Surge Rate', pts: ind.recentSurge || 18, max: 20 },
-      { name: 'Rainfall & Weather Impact Index', pts: ind.weatherFactor || 14, max: 15 },
-      { name: 'Previous Incident Recurrence Record', pts: ind.incidentHistory || 12, max: 15 },
-      { name: 'Population Density & Footfall Spike', pts: ind.populationActivity || 8, max: 10 },
-      { name: 'Maintenance & Service Delay Index', pts: ind.serviceFrequency || 6, max: 10 }
-    ];
-
-    const factorListContainer = document.getElementById('explain-factor-list');
-    factorListContainer.innerHTML = '';
-
-    factors.forEach(f => {
-      const pct = Math.round((f.pts / f.max) * 100);
+  showExplanationModal(id) {
+    const prediction = DataStore.getPredictions().find(item => item.id === id);
+    if (!prediction) return;
+    document.getElementById('explain-title').textContent = prediction.category;
+    document.getElementById('explain-zone').textContent = prediction.zoneName;
+    document.getElementById('explain-score').textContent = `${prediction.riskScore}/100`;
+    document.getElementById('explain-confidence').textContent = 'Weighted rules';
+    const factors = prediction.factorBreakdown || [];
+    const list = document.getElementById('explain-factor-list');
+    list.replaceChildren();
+    factors.forEach(factor => {
       const item = document.createElement('div');
       item.className = 'factor-item';
-      item.innerHTML = `
-        <div class="factor-label-row">
-          <span>${f.name}</span>
-          <strong style="color:var(--text-primary);">+${f.pts} / ${f.max} pts</strong>
-        </div>
-        <div class="progress-bar-bg" style="height:7px;">
-          <div class="progress-bar-fill high" style="width:${pct}%;"></div>
-        </div>
-      `;
-      factorListContainer.appendChild(item);
+      const label = document.createElement('div');
+      label.className = 'factor-label-row';
+      const name = document.createElement('span');
+      name.textContent = factor.name;
+      const points = document.createElement('strong');
+      points.textContent = `${factor.points}/${factor.max} pts`;
+      label.append(name, points);
+      const bar = document.createElement('div');
+      bar.className = 'progress-bar-bg';
+      bar.style.height = '7px';
+      const fill = document.createElement('div');
+      fill.className = `progress-bar-fill ${prediction.riskLevel.toLowerCase()}`;
+      fill.style.width = `${factor.max ? factor.points / factor.max * 100 : 0}%`;
+      bar.appendChild(fill);
+      item.append(label, bar);
+      list.appendChild(item);
     });
-
-    modal.classList.add('active');
+    const reasons = document.createElement('p');
+    reasons.className = 'prediction-data-note';
+    reasons.textContent = `Main contributing factors: ${(prediction.reasons || []).join('; ') || 'No complaint signals recorded.'}`;
+    list.appendChild(reasons);
+    document.getElementById('explanation-modal').classList.add('active');
   }
 };

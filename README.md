@@ -1,140 +1,92 @@
 # AI Civic Problem Predictor
 
-> **Predict civic problems before they become emergencies.**
+An interactive civic operations prototype for reporting and tracking complaints, reviewing transparent zone risk scores, and exploring local complaint analytics.
 
 An innovative, 100% static, SIH-level civic-management prototype designed to predict potential civic infrastructure failures before they escalate into emergencies.
- 
----
 
-## 🏆 Smart India Hackathon (SIH) Concept  
+> **Prototype notice:** The weighted risk score is an explainable heuristic, not a trained machine-learning model. Seed records, population figures, infrastructure estimates, map shapes, and map marker positions are illustrative demo data. The project is not connected to verified municipal boundaries, sensors, weather services, or live authority systems.
 
+## 🏆 Smart India Hackathon (SIH) Concept
 
 ### Problem Statement
-Traditional municipal civic management systems are **reactive**. Municipalities wait for infrastructure failures (e.g. pipe bursts, drainage overflows, massive pothole clusters, garbage accumulation) to occur, after which citizens file complaints, leading to delayed emergency repairs, elevated municipal costs, and severe public inconvenience.
-  
+Traditional municipal civic management systems are **reactive**. Municipalities wait for infrastructure failures (for example pipe bursts, drainage overflows, pothole clusters, and garbage accumulation) to occur, after which citizens file complaints, leading to delayed emergency repairs, elevated municipal costs, and severe public inconvenience.
+
 ### Proposed Solution
-**AI Civic Problem Predictor** shifts municipal management from **reactive repair** to **proactive prediction**. By aggregating multi-indicator telemetry—such as historical complaints, complaint surge frequency, weather/rainfall forecasts, service delays, and population activity—the system calculates a **Civic Risk Score (0–100%)** across city zones and alerts authorities to deploy preventive maintenance *before* problems occur.
+**AI Civic Problem Predictor** shifts municipal management from **reactive repair** to **proactive prediction**. By aggregating multi-indicator telemetry—such as historical complaints, complaint surge frequency, weather or rainfall patterns, service delays, and population activity—the system calculates a **Civic Risk Score (0–100%)** across city zones and alerts authorities to deploy preventive maintenance before problems escalate.
 
-```text
-Traditional System:
-Problem Occurs → Citizen Complains → Verification → Delayed Response → Problem Worsens
+## Features
 
-Our Proactive System:
-Historical Data → AI Analysis → Risk Prediction → Authority Alert → Preventive Action → Problem Avoided
+- Complaint form with category, title, description, zone, location, date/time, priority, validation, and optional photo.
+- Unique complaint IDs, status history, department assignment, and complaint-ID tracking.
+- IndexedDB for browser complaint records and photo blobs, with localStorage cache and preferences.
+- Authority dashboard with actual stored-record counts, filters, sorting, complaint details, status and department controls, local backup/restore, and optional backend connection.
+- Explainable risk scores (0–100) using complaint frequency, severity, historical estimates, population estimates, infrastructure vulnerability, recent trends, and unresolved reports.
+- Leaflet schematic risk map; every shape and complaint marker is simulated and is not geocoded.
+- Chart.js analytics from stored complaints, daily/weekly trends, filters, CSV export, and PDF report.
+- Event-based notification history, read state, and an explicitly simulated demo mode.
+- Static HTML/CSS/Vanilla JavaScript frontend remains compatible with GitHub Pages.
+- Optional Node.js/Express API with JSON persistence, validation, CORS allowlisting, admin bearer-token protection, and private image storage.
+
+## Run the frontend
+
+The site has no frontend build step. Open `index.html` or serve the project root with a local static-file server such as the VS Code Live Server extension. The initial seeded dataset is marked as demo data; new reports are marked as user records. Browser-only records do not synchronize across browsers or devices.
+
+The frontend is deployed at:
+
+<https://siddharth440.github.io/AI-civic-problem-predictor/>
+
+GitHub Pages can serve the static frontend but cannot run the Express API.
+
+## Optional Express backend
+
+Requires Node.js 20.6 or newer.
+
+```powershell
+npm install
+Copy-Item .env.example .env
 ```
 
----
+Replace `ADMIN_API_TOKEN` in the local `.env` with a random secret of at least 32 characters. Keep `.env` private; it is ignored by Git. Set `FRONTEND_ORIGINS` to the exact allowed browser origins, comma-separated. The example includes the GitHub Pages origin and localhost development origins.
 
-## 🚀 Key Features
+Start the service:
 
-1. **Explainable AI Risk Engine (`js/prediction.js`)**:
-   Calculates a multi-indicator weighted score matrix:
-   - Historical Complaints (30%)
-   - Recent Complaint Surge (20%)
-   - Weather / Rainfall Risk (15%)
-   - Previous Incident Record (15%)
-   - Population & Footfall Activity (10%)
-   - Service / Maintenance Delay (10%)
-
-2. **Municipal Authority Dashboard (`dashboard.html`)**:
-   - Executive metric overview (Total Reports, Active Tasks, Predicted Problems, High-Risk Zones, Prevented Incidents).
-   - Priority Action dispatch table with status toggles (`Predicted`, `Assigned`, `In Progress`, `Resolved`, `Prevented`) persisted in `localStorage`.
-
-3. **Citizen Reporting Portal (`citizen.html`)**:
-   - Form with validation, severity classification, landmark tagging, and photo evidence attachment.
-   - Auto-generates unique Report IDs (e.g., `REP-8491`) and automatically recalculates zone AI risk scores upon submission.
-
-4. **AI Prediction Dashboard (`predictions.html`)**:
-   - Filterable prediction cards by category (`Garbage`, `Potholes`, `Water Leakage`, `Drainage`, `Flooding`, `Streetlights`).
-   - Sorting options by risk score, confidence, and date.
-   - Interactive **"Why this prediction?"** explainable AI breakdown modal showing exact point contributions.
-
-5. **Interactive Civic Risk Map (`map.html`)**:
-   - Vector SVG city map featuring 6 dynamic zones (Zone 1 to Zone 6).
-   - Dynamic color-coded risk levels (`Low`, `Medium`, `High`, `Critical`).
-   - Clickable zones opening an inspector drawer with demographic and risk breakdown metrics.
-
-6. **Analytics & Performance Insights (`analytics.html`)**:
-   - Interactive Chart.js visualizers comparing reactive complaints vs proactive AI predictions, issue category breakdowns, and zone risk distribution.
-
-7. **Alert & Notification Center (`alerts.html`)**:
-   - High-priority system dispatches with filter and mark-as-read capabilities.
-
-8. **Live Simulation Telemetry Mode**:
-   - Real-time simulated sensor pulses every 6 seconds, updating risk metrics and firing live toast notifications.
-
----
-
-## 🛠️ Technology Stack
-
-- **HTML5 & CSS3**: Modern Gov-Tech UI design system, glassmorphism header, dark/light theme switching, responsive grid system.
-- **Vanilla JavaScript (ES6+)**: Zero backend, zero npm build step, pure static execution.
-- **Web Storage API (`localStorage`)**: Persists citizen reports, prediction states, authority action updates, alerts, and theme preferences across browser refreshes.
-- **Chart.js CDN**: High-performance interactive analytics charts.
-
----
-
-## 📁 File & Folder Architecture
-
-```text
-AI-Civic-Problem-Predictor/
-├── index.html              # Landing Page
-├── dashboard.html          # Authority Dashboard
-├── citizen.html            # Citizen Reporting Portal
-├── predictions.html        # AI Prediction Dashboard
-├── map.html                # Interactive Risk Map
-├── analytics.html          # Analytics & Insights
-├── alerts.html             # Notification Center
-├── about.html              # Project Info & Innovation
-├── css/
-│   └── style.css           # Design System & Theme Stylesheet
-├── js/
-│   ├── data.js             # Data Store & LocalStorage Seed Engine
-│   ├── prediction.js       # Explainable Risk Engine
-│   ├── app.js              # Global Theme, Live Sim & Toast Engine
-│   ├── dashboard.js        # Dashboard Controller
-│   ├── citizen.js          # Citizen Form & Validation Controller
-│   ├── predictions.js      # Prediction Filter & Modal Controller
-│   ├── map.js              # Interactive SVG Map Controller
-│   ├── analytics.js        # Chart.js Visualizer Controller
-│   └── alerts.js           # Alerts Manager
-└── README.md               # Presentation Documentation
+```powershell
+npm start
 ```
 
----
+Health check: `http://localhost:3000/api/health`
 
-## 🌐 How to Run Locally & Deploy to GitHub Pages
+For Render or another Node host:
 
-### Running Locally
-1. Clone or download this project folder.
-2. Simply double-click `index.html` or open it in any modern web browser (Google Chrome, Mozilla Firefox, Microsoft Edge, Safari).
-3. No server (`npm`, `python`, `node`) required!
+1. Deploy this repository as a Node web service using `npm install` and `npm start`.
+2. Set `FRONTEND_ORIGINS`, `ADMIN_API_TOKEN`, and `DATA_FILE` in the host's environment settings.
+3. Configure persistent disk storage and point `DATA_FILE` to that disk (for example, `/var/data/complaints.json`). The default filesystem on many free hosting plans is ephemeral.
+4. In `js/config.js`, set `API_BASE_URL` to the deployed HTTPS API origin, then publish the static frontend to GitHub Pages.
+5. On the dashboard, enter the admin token to sync backend records and enable protected status/assignment updates. The token is held in page memory only and is not stored in source code or localStorage.
 
-### GitHub Pages Deployment
-1. Create a new public repository on GitHub named `AI-Civic-Problem-Predictor`.
-2. Push all project files to the `main` branch:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial SIH Prototype Commit"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/AI-Civic-Problem-Predictor.git
-   git push -u origin main
-   ```
-3. Navigate to **Repository Settings** → **Pages**.
-4. Under **Build and deployment** → **Source**, select **Deploy from a branch**.
-5. Select branch `main` and folder `/ (root)`, then click **Save**.
-6. Your live site will be available at: `https://YOUR_USERNAME.github.io/AI-Civic-Problem-Predictor/`
+The public API accepts complaint submission and ID-based public status tracking; citizen names are excluded from public responses. Authority listing, edits, and deletion require the bearer token. Uploads accept JPEG, PNG, and WebP up to 5 MB, validate the declared type against the file signature, and are stored outside the public web root. Browser-only photos remain in IndexedDB and are not included in JSON backups.
 
----
+API endpoints:
 
-## ⚠️ Prototype Disclaimer
+- `GET /api/health`
+- `POST /api/complaints`
+- `GET /api/complaints/:id`
+- `POST /api/complaints/:id/image`
+- `GET /api/admin/complaints` (bearer token)
+- `PATCH /api/admin/complaints/:id` (bearer token)
+- `DELETE /api/admin/complaints/:id` (bearer token)
 
-> *The current prototype uses a JavaScript-based explainable prediction engine and simulated data. A production implementation could integrate trained ML models (such as XGBoost, Prophet, or LSTM time-series models) and verified municipal sensor datasets.*
+## Storage, backups, and limitations
 
----
+- Without `API_BASE_URL`, complaints and images are stored only in the current browser. Clearing browser data can remove them.
+- The dashboard's JSON backup covers complaint, prediction, alert, and zone records; photos are not embedded.
+- Zone population and infrastructure values are configurable demo estimates in `js/data.js`.
+- The optional JSON backend requires persistent storage supplied by the hosting provider; it is a lightweight prototype, not a horizontally scaled database.
+- Map zones and complaint positions are deliberately schematic. No real municipal geography or incident coordinates are claimed.
+- Demo simulation events are generated locally and must not be interpreted as live sensor events.
 
-## 👥 SIH Team
+## Tests
 
-- **Project Lead & Developer**: Expert Full-Stack AI Engineer
-- **Event**: Smart India Hackathon (SIH) 2026
+```powershell
+npm test
+```

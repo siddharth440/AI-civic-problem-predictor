@@ -16,6 +16,8 @@ const App = {
     this.initSidebar();
     this.initLiveSimulation();
     this.initGlobalEvents();
+    this.renderHomeStats();
+    this.initDataTools();
   },
 
   // Theme Management
@@ -51,7 +53,8 @@ const App = {
 
     if (mobileToggle && sidebar) {
       mobileToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
+        const isOpen = sidebar.classList.toggle('open');
+        mobileToggle.setAttribute('aria-expanded', String(isOpen));
       });
     }
 
@@ -75,6 +78,8 @@ const App = {
 
     if (savedSimState) {
       this.startLiveSimulation();
+    } else {
+      this.updateSimulationBadge(false);
     }
 
     if (simBadge) {
@@ -89,16 +94,11 @@ const App = {
   },
 
   startLiveSimulation() {
+    if (this.liveSimTimer) clearInterval(this.liveSimTimer);
     this.isLiveSimActive = true;
     localStorage.setItem(STORAGE_KEYS.LIVE_SIM, 'true');
-
-    const simBadge = document.getElementById('live-sim-badge');
-    if (simBadge) {
-      simBadge.classList.add('active');
-      simBadge.querySelector('.sim-text').textContent = '● LIVE SIMULATION';
-    }
-
-    this.showToast('Live Municipal Data Simulation Active', 'success');
+    this.updateSimulationBadge(true);
+    this.showToast('Demo simulation active. Generated alerts are simulated, not live incidents.', 'info');
 
     // Run simulation loop every 6 seconds
     this.liveSimTimer = setInterval(() => {
@@ -111,11 +111,7 @@ const App = {
     localStorage.setItem(STORAGE_KEYS.LIVE_SIM, 'false');
     if (this.liveSimTimer) clearInterval(this.liveSimTimer);
 
-    const simBadge = document.getElementById('live-sim-badge');
-    if (simBadge) {
-      simBadge.classList.remove('active');
-      simBadge.querySelector('.sim-text').textContent = '○ SIMULATION PAUSED';
-    }
+    this.updateSimulationBadge(false);
 
     this.showToast('Live Simulation Paused', 'warning');
   },
@@ -125,22 +121,24 @@ const App = {
       () => {
         const randZone = Math.floor(Math.random() * 6) + 1;
         DataStore.addAlert({
-          id: 'ALT-' + Math.floor(1000 + Math.random() * 9000),
+          id: DataStore.createId('ALT'),
           zone: `Zone ${randZone}`,
           level: 'High',
           title: `Sensor Spike: Zone ${randZone} Drainage Level`,
           message: `Rainfall runoff surge detected. Civic risk score updated for Zone ${randZone}.`,
-          timestamp: 'Just now',
-          isRead: false
+          timestamp: new Date().toISOString(),
+          isRead: false,
+          isDemo: true
         });
-        this.showToast(`Live Alert: Rainfall surge detected in Zone ${randZone}`, 'warning');
+        this.showToast(`Simulated alert: rainfall surge in Zone ${randZone}`, 'warning');
       },
       () => {
-        this.showToast(`AI Engine recalculated risk matrix across 6 municipal zones`, 'info');
+        const predictions = PredictionEngine.recalculateAllZonePredictions();
+        predictions.forEach(prediction => DataStore.updatePrediction(prediction));
+        this.showToast('Demo risk scores recalculated from available complaint data.', 'info');
       },
       () => {
-        const randId = 'REP-' + Math.floor(8500 + Math.random() * 500);
-        this.showToast(`Simulated telemetry: Sensor update received for ${randId}`, 'success');
+        this.showToast('Simulated telemetry pulse received. No real sensor data is connected.', 'success');
       }
     ];
 
@@ -190,7 +188,95 @@ const App = {
       if (e.key === 'Escape') {
         const activeModal = document.querySelector('.modal-overlay.active');
         if (activeModal) activeModal.classList.remove('active');
+        document.querySelector('.sidebar.open')?.classList.remove('open');
       }
     });
+    window.addEventListener('civic-data-changed', () => {
+      this.renderHomeStats();
+      this.updateSimulationBadge(this.isLiveSimActive);
+    });
+    window.addEventListener('storage', () => this.renderHomeStats());
+  },
+
+  updateSimulationBadge(active) {
+    const badge = document.getElementById('live-sim-badge');
+    if (!badge) return;
+    badge.classList.toggle('active', active);
+    const text = badge.querySelector('.sim-text');
+    const reports = DataStore.getReports();
+    const demoCount = reports.filter(report => report.isDemo).length;
+    const userCount = reports.length - demoCount;
+    if (text) text.textContent = active
+      ? '● DEMO SIMULATION ON'
+      : `${demoCount ? `DEMO ${demoCount}` : 'NO DEMO DATA'} · USER ${userCount}`;
+    badge.setAttribute('aria-label', active
+      ? 'Demo simulation active; generated data is simulated'
+      : `${demoCount} sample demo records and ${userCount} user records stored in this browser`);
+  },
+
+  renderHomeStats() {
+    if (!document.body || document.body.id !== 'home-page') return;
+    const reports = DataStore.getReports();
+    const predictions = DataStore.getPredictions();
+    const durations = reports
+      .filter(report => report.status === 'Resolved' && report.createdAt && report.resolvedAt)
+      .map(report => (new Date(report.resolvedAt) - new Date(report.createdAt)) / 3600000)
+      .filter(hours => Number.isFinite(hours) && hours >= 0);
+    const average = durations.length
+      ? `${(durations.reduce((sum, hours) => sum + hours, 0) / durations.length).toFixed(1)} hrs`
+      : '—';
+    const values = {
+      'home-total-reports': reports.length,
+      'home-high-risk-zones': predictions.filter(item => ['High', 'Critical'].includes(item.riskLevel)).length,
+      'home-prevented': reports.filter(item => item.status === 'Prevented').length,
+      'home-response-time': average
+    };
+    Object.entries(values).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    });
+  },
+
+  initDataTools() {
+    const exportButton = document.getElementById('export-backup-btn');
+    if (exportButton) exportButton.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(DataStore.exportData(), null, 2)], { type: 'application/json' });
+      this.downloadBlob(blob, `civic-predict-backup-${new Date().toISOString().slice(0, 10)}.json`);
+    });
+    const importInput = document.getElementById('import-backup-file');
+    if (importInput) importInput.addEventListener('change', async () => {
+      const file = importInput.files[0];
+      if (!file) return;
+      try {
+        DataStore.importData(JSON.parse(await file.text()));
+        this.showToast('Backup restored in this browser.', 'success');
+      } catch (error) {
+        this.showToast(`Backup restore failed: ${error.message}`, 'error');
+      } finally {
+        importInput.value = '';
+      }
+    });
+    const resetButton = document.getElementById('reset-demo-btn');
+    if (resetButton) resetButton.addEventListener('click', () => {
+      if (!window.confirm('Replace local records with the sample demo dataset? This cannot be undone.')) return;
+      localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(DEFAULT_REPORTS));
+      localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify(DEFAULT_ALERTS));
+      localStorage.setItem(STORAGE_KEYS.ZONES, JSON.stringify(DEFAULT_ZONES));
+      const predictions = PredictionEngine.recalculateAllZonePredictions();
+      localStorage.setItem(STORAGE_KEYS.PREDICTIONS, JSON.stringify(predictions));
+      DataStore.persistReports(DEFAULT_REPORTS).catch(error => {
+        this.showToast(`Demo data was reset in local storage, but IndexedDB sync failed: ${error.message}`, 'error');
+      });
+      DataStore.notifyChange('all');
+      this.showToast('Sample demo data restored.', 'success');
+    });
+  },
+
+  downloadBlob(blob, filename) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
 };

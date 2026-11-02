@@ -23,6 +23,7 @@
         <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home Page</a>
         <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
         <a href="citizen.html" class="nav-item active"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="tracking.html" class="nav-item"><i class="fas fa-magnifying-glass"></i> Track Complaint</a>
         <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
         <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
         <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
@@ -63,18 +64,18 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">Report a Civic Problem</h2>
-            <p class="section-subtitle">Your reports feed directly into our AI risk prediction engine to prevent widespread infrastructure emergencies.</p>
+            <p class="section-subtitle">Reports update this browser's weighted risk-scoring prototype and can be tracked by complaint ID.</p>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 2rem;">
+        <div class="citizen-layout">
           <!-- Reporting Form Card -->
           <div class="card">
             <div class="card-header">
               <h3 class="card-title"><i class="fas fa-pen-to-square" style="color:var(--accent-primary);"></i> Submit New Report</h3>
             </div>
             <form id="citizen-report-form">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="citizen-field-grid">
                 <div class="form-group">
                   <label class="form-label" for="report-name">Your Full Name *</label>
                   <input type="text" id="report-name" class="form-control" placeholder="e.g. Ananya Sharma" required>
@@ -84,18 +85,25 @@
                   <label class="form-label" for="report-category">Problem Category *</label>
                   <select id="report-category" class="form-control" required>
                     <option value="" disabled selected>Select Category</option>
-                    <option value="Garbage">Garbage Accumulation</option>
-                    <option value="Pothole">Pothole / Road Damage</option>
-                    <option value="Water Leakage">Water Pipe Leakage</option>
-                    <option value="Drainage">Drainage / Sewage Backup</option>
-                    <option value="Flooding">Waterlogging / Flooding</option>
-                    <option value="Streetlight">Streetlight Non-Functional</option>
-                    <option value="Other">Other Civic Hazard</option>
+                    <option value="Road Damage">Road Damage</option>
+                    <option value="Water Leakage">Water Leakage</option>
+                    <option value="Garbage Overflow">Garbage Overflow</option>
+                    <option value="Drainage Problems">Drainage Problems</option>
+                    <option value="Street Light Failure">Street Light Failure</option>
+                    <option value="Traffic Congestion">Traffic Congestion</option>
+                    <option value="Flood Risk">Flood Risk</option>
+                    <option value="Public Safety">Public Safety</option>
+                    <option value="Other Civic Issues">Other Civic Issues</option>
                   </select>
                 </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="report-title">Complaint Title *</label>
+                <input type="text" id="report-title" class="form-control" maxlength="120" placeholder="Briefly describe the issue" required>
+              </div>
+
+              <div class="citizen-field-grid">
                 <div class="form-group">
                   <label class="form-label" for="report-zone">Municipal Zone *</label>
                   <select id="report-zone" class="form-control" required>
@@ -129,22 +137,36 @@
                 <textarea id="report-desc" class="form-control" placeholder="Describe the civic issue in detail (e.g. size of pothole, water flow rate, duration)..." required></textarea>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="citizen-field-grid citizen-field-grid-three">
                 <div class="form-group">
                   <label class="form-label" for="report-date">Incident Date *</label>
                   <input type="date" id="report-date" class="form-control" required>
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Attach Photo Evidence (Simulated)</label>
-                  <input type="file" id="report-image" class="form-control" accept="image/*">
+                  <label class="form-label" for="report-time">Incident Time *</label>
+                  <input type="time" id="report-time" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="report-image">Attach Photo Evidence (optional, max 5 MB)</label>
+                  <input type="file" id="report-image" class="form-control" accept="image/jpeg,image/png,image/webp">
                 </div>
               </div>
+              <img id="report-image-preview" alt="Selected complaint photo preview" hidden style="max-width:100%; max-height:220px; object-fit:contain; margin-bottom:1rem; border-radius:var(--radius-md);">
 
               <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem; padding:0.85rem; font-size:1rem;">
                 <i class="fas fa-paper-plane"></i> Submit Incident Report & Recalculate AI Risk Score
               </button>
             </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-magnifying-glass" style="color:var(--accent-primary);"></i> Track a Complaint</h3>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.75rem;">Have a complaint ID? Check its latest status and timeline.</p>
+            <a class="btn btn-outline btn-sm" href="tracking.html">Open complaint tracking</a>
           </div>
 
           <!-- Submitted Reports History Drawer -->
@@ -201,6 +223,9 @@
           <button class="btn btn-primary" style="flex:1;" onclick="document.getElementById('submission-success-modal').classList.remove('active')">
             Done
           </button>
+          <a id="modal-track-link" href="tracking.html" class="btn btn-outline" style="flex:1;">
+            Track complaint
+          </a>
           <a href="predictions.html" class="btn btn-secondary" style="flex:1;">
             View Updated AI Risk
           </a>
@@ -209,6 +234,7 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/prediction.js"></script>
   <script src="js/app.js"></script>

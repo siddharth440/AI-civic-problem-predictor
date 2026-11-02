@@ -9,17 +9,22 @@ const STORAGE_KEYS = {
   ALERTS: 'sih_civic_alerts',
   ZONES: 'sih_civic_zones',
   THEME: 'sih_civic_theme',
-  LIVE_SIM: 'sih_civic_livesim'
+  LIVE_SIM: 'sih_civic_livesim',
+  API_BASE_URL: 'sih_civic_api_base_url'
 };
+
+const CIVIC_DB_NAME = 'civic-predictor';
+const CIVIC_DB_VERSION = 1;
+window.CIVIC_CONFIG = window.CIVIC_CONFIG || { API_BASE_URL: '' };
 
 // Initial Seed Datasets
 const DEFAULT_ZONES = [
-  { id: 'zone-1', name: 'Zone 1 - Indiranagar North', population: 85000, complaintCount: 24, serviceFreq: 'Bi-weekly', weatherRisk: 'Moderate' },
-  { id: 'zone-2', name: 'Zone 2 - Riverside Boulevard', population: 110000, complaintCount: 52, serviceFreq: 'Weekly', weatherRisk: 'Heavy Rain' },
-  { id: 'zone-3', name: 'Zone 3 - Central Market & Transit', population: 140000, complaintCount: 68, serviceFreq: 'Daily', weatherRisk: 'Normal' },
-  { id: 'zone-4', name: 'Zone 4 - Industrial Corridor', population: 95000, complaintCount: 89, serviceFreq: 'Bi-monthly', weatherRisk: 'High Spill Risk' },
-  { id: 'zone-5', name: 'Zone 5 - West Suburbs', population: 72000, complaintCount: 31, serviceFreq: 'Weekly', weatherRisk: 'Normal' },
-  { id: 'zone-6', name: 'Zone 6 - Heritage Old City', population: 165000, complaintCount: 94, serviceFreq: 'Monthly', weatherRisk: 'Moderate Rain' }
+  { id: 'zone-1', name: 'Zone 1 - Indiranagar North', population: 85000, populationIsEstimate: true, complaintCount: 24, infrastructureVulnerability: 40, serviceFreq: 'Bi-weekly', weatherRisk: 'Moderate' },
+  { id: 'zone-2', name: 'Zone 2 - Riverside Boulevard', population: 110000, populationIsEstimate: true, complaintCount: 52, infrastructureVulnerability: 70, serviceFreq: 'Weekly', weatherRisk: 'Heavy Rain' },
+  { id: 'zone-3', name: 'Zone 3 - Central Market & Transit', population: 140000, populationIsEstimate: true, complaintCount: 68, infrastructureVulnerability: 62, serviceFreq: 'Daily', weatherRisk: 'Normal' },
+  { id: 'zone-4', name: 'Zone 4 - Industrial Corridor', population: 95000, populationIsEstimate: true, complaintCount: 89, infrastructureVulnerability: 82, serviceFreq: 'Bi-monthly', weatherRisk: 'High Spill Risk' },
+  { id: 'zone-5', name: 'Zone 5 - West Suburbs', population: 72000, populationIsEstimate: true, complaintCount: 31, infrastructureVulnerability: 48, serviceFreq: 'Weekly', weatherRisk: 'Normal' },
+  { id: 'zone-6', name: 'Zone 6 - Heritage Old City', population: 165000, populationIsEstimate: true, complaintCount: 94, infrastructureVulnerability: 88, serviceFreq: 'Monthly', weatherRisk: 'Moderate Rain' }
 ];
 
 const DEFAULT_REPORTS = [
@@ -177,6 +182,10 @@ const DEFAULT_ALERTS = [
 
 // Data Store Accessor & Mutator API
 const DataStore = {
+  dbPromise: null,
+  dbError: null,
+  adminToken: null,
+
   init() {
     if (!localStorage.getItem(STORAGE_KEYS.REPORTS)) {
       localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(DEFAULT_REPORTS));
@@ -190,39 +199,288 @@ const DataStore = {
     if (!localStorage.getItem(STORAGE_KEYS.ZONES)) {
       localStorage.setItem(STORAGE_KEYS.ZONES, JSON.stringify(DEFAULT_ZONES));
     }
+    if (!this.dbPromise && typeof indexedDB !== 'undefined') {
+      this.dbPromise = this.openDatabase().then(async db => {
+        await this.hydrateFromDatabase(db);
+        return db;
+      }).catch(error => {
+        this.dbError = error;
+        console.error('IndexedDB is unavailable; complaint records will remain in local storage.', error);
+        return null;
+      });
+    }
+  },
+
+  openDatabase() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(CIVIC_DB_NAME, CIVIC_DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('records')) db.createObjectStore('records');
+        if (!db.objectStoreNames.contains('images')) db.createObjectStore('images');
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Unable to open local civic storage.'));
+    });
+  },
+
+  async hydrateFromDatabase(db) {
+    const storedReports = await this.readFromDatabase(db, 'records', 'reports');
+    if (Array.isArray(storedReports)) {
+      localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(storedReports));
+      window.dispatchEvent(new CustomEvent('civic-data-changed', { detail: { type: 'reports' } }));
+      return;
+    }
+    await this.writeToDatabase(db, 'records', 'reports', this.getReports());
+  },
+
+  readFromDatabase(db, storeName, key) {
+    return new Promise((resolve, reject) => {
+      const request = db.transaction(storeName, 'readonly').objectStore(storeName).get(key);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Unable to read local civic storage.'));
+    });
+  },
+
+  writeToDatabase(db, storeName, key, value) {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(storeName, 'readwrite');
+      transaction.objectStore(storeName).put(value, key);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error('Unable to save local civic storage.'));
+      transaction.onabort = () => reject(transaction.error || new Error('Local civic storage write was cancelled.'));
+    });
+  },
+
+  async persistReports(reports) {
+    this.init();
+    if (this.dbPromise) {
+      const db = await this.dbPromise;
+      if (!db) throw this.dbError || new Error('IndexedDB is unavailable.');
+      await this.writeToDatabase(db, 'records', 'reports', reports);
+    }
+    window.dispatchEvent(new CustomEvent('civic-data-changed', { detail: { type: 'reports' } }));
+  },
+
+  async storeImage(imageId, file) {
+    this.init();
+    if (!this.dbPromise) throw new Error('This browser does not support local image storage.');
+    const db = await this.dbPromise;
+    if (!db) throw this.dbError || new Error('IndexedDB is unavailable.');
+    await this.writeToDatabase(db, 'images', imageId, file);
+    return imageId;
+  },
+
+  async getImage(imageId) {
+    if (!imageId) return null;
+    this.init();
+    if (!this.dbPromise) return null;
+    const db = await this.dbPromise;
+    if (!db) return null;
+    return this.readFromDatabase(db, 'images', imageId);
+  },
+
+  createId(prefix) {
+    const token = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase()
+      : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`.toUpperCase();
+    return `${prefix}-${token}`;
+  },
+
+  getApiBaseUrl() {
+    return String(window.CIVIC_CONFIG.API_BASE_URL || '').trim().replace(/\/+$/, '');
+  },
+
+  async apiRequest(path, options = {}) {
+    const baseUrl = this.getApiBaseUrl();
+    if (!baseUrl) return null;
+    const { admin = false, allowNotFound = false, ...fetchOptions } = options;
+    if (admin && !this.adminToken) throw new Error('Enter the admin API token to use protected authority features.');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const headers = { 'Content-Type': 'application/json', ...(fetchOptions.headers || {}) };
+      if (admin) headers.Authorization = `Bearer ${this.adminToken}`;
+      const response = await fetch(`${baseUrl}${path}`, {
+        ...fetchOptions,
+        signal: controller.signal,
+        headers
+      });
+      if (response.status === 404 && allowNotFound) return null;
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || `Backend request failed (${response.status}).`);
+      return body;
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+
+  submitToBackend(report) {
+    if (!this.getApiBaseUrl()) return Promise.resolve(null);
+    return this.apiRequest('/api/complaints', { method: 'POST', body: JSON.stringify(report) });
+  },
+
+  async uploadImageToBackend(complaintId, file) {
+    if (!this.getApiBaseUrl()) return null;
+    const data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error || new Error('Unable to read the selected image.'));
+      reader.readAsDataURL(file);
+    });
+    return this.apiRequest(`/api/complaints/${encodeURIComponent(complaintId)}/image`, {
+      method: 'POST',
+      body: JSON.stringify({ mimeType: file.type, data })
+    });
+  },
+
+  async fetchBackendComplaint(id) {
+    if (!this.getApiBaseUrl()) return null;
+    const response = await this.apiRequest(`/api/complaints/${encodeURIComponent(id)}`, { allowNotFound: true });
+    return response?.complaint ? { ...response.complaint, source: 'backend' } : null;
+  },
+
+  setAdminToken(token) {
+    this.adminToken = token || null;
+  },
+
+  async syncBackendReports() {
+    const response = await this.apiRequest('/api/admin/complaints', { admin: true });
+    const localReports = this.getReports();
+    const backendReports = response.complaints.map(report => ({ ...report, source: 'backend' }));
+    const ids = new Set(backendReports.map(report => report.id));
+    const merged = [
+      ...backendReports,
+      ...localReports.filter(report => !ids.has(report.id))
+    ];
+    localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(merged));
+    await this.persistReports(merged);
+    return backendReports;
+  },
+
+  updateBackendComplaint(id, updates) {
+    return this.apiRequest(`/api/admin/complaints/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      admin: true,
+      body: JSON.stringify(updates)
+    });
+  },
+
+  notifyChange(type) {
+    window.dispatchEvent(new CustomEvent('civic-data-changed', { detail: { type } }));
   },
 
   getReports() {
     this.init();
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.REPORTS) || '[]');
+    const demoIds = new Set(DEFAULT_REPORTS.map(report => report.id));
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.REPORTS) || '[]')
+      .map(report => {
+        const isDemo = report.isDemo ?? demoIds.has(report.id);
+        const categoryAliases = {
+          Garbage: 'Garbage Overflow',
+          Pothole: 'Road Damage',
+          Drainage: 'Drainage Problems',
+          Flooding: 'Flood Risk',
+          Streetlight: 'Street Light Failure',
+          Other: 'Other Civic Issues'
+        };
+        const statusAliases = { Predicted: 'Submitted', Prevented: 'Resolved' };
+        return {
+          ...report,
+          title: report.title || report.category,
+          category: isDemo ? (categoryAliases[report.category] || report.category) : report.category,
+          status: statusAliases[report.status] || report.status,
+          priority: report.priority || report.severity,
+          isDemo
+        };
+      });
   },
 
-  addReport(report) {
+  async addReport(report) {
     const reports = this.getReports();
+    if (reports.some(existing => existing.id === report.id)) {
+      throw new Error(`Complaint ID ${report.id} already exists.`);
+    }
     reports.unshift(report);
     localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(reports));
+    let persistenceError = null;
+    try {
+      await this.persistReports(reports);
+    } catch (error) {
+      persistenceError = error;
+    }
     
     // Add alert automatically
     this.addAlert({
-      id: 'ALT-' + Math.floor(100 + Math.random() * 900),
+      id: this.createId('ALT'),
       zone: report.zoneId ? report.zoneId.replace('zone-', 'Zone ') : 'City',
       level: report.severity === 'Critical' ? 'Critical' : (report.severity === 'High' ? 'High' : 'Medium'),
       title: `New Citizen Report: ${report.category}`,
       message: `Report ${report.id} filed for ${report.location}. Severity: ${report.severity}`,
-      timestamp: 'Just now',
+      timestamp: new Date().toISOString(),
       isRead: false
     });
-    
+    if (persistenceError) throw persistenceError;
     return report;
   },
 
-  updateReportStatus(id, newStatus) {
+  async updateReportStatus(id, newStatus) {
     const reports = this.getReports();
     const idx = reports.findIndex(r => r.id === id);
     if (idx !== -1) {
-      reports[idx].status = newStatus;
+      const report = reports[idx];
+      report.status = newStatus;
+      report.updatedAt = new Date().toISOString();
+      if (newStatus === 'Resolved') report.resolvedAt = report.updatedAt;
+      report.history = report.history || [];
+      report.history.push({ status: newStatus, at: report.updatedAt, note: `Status changed to ${newStatus}.` });
       localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(reports));
+      let persistenceError = null;
+      try {
+        await this.persistReports(reports);
+      } catch (error) {
+        persistenceError = error;
+      }
+      this.addAlert({
+        id: this.createId('ALT'),
+        zone: report.zoneName || report.zoneId || 'City',
+        level: newStatus === 'Resolved' ? 'Success' : 'Medium',
+        title: `Complaint ${newStatus}`,
+        message: `Complaint ${report.id} status changed to ${newStatus}.`,
+        timestamp: new Date().toISOString(),
+        isRead: false,
+        complaintId: report.id
+      });
+      if (persistenceError) throw persistenceError;
     }
+  },
+
+  async updateReportAssignment(id, department) {
+    const reports = this.getReports();
+    const report = reports.find(item => item.id === id);
+    if (!report) throw new Error(`Complaint ${id} was not found.`);
+    report.department = department;
+    report.updatedAt = new Date().toISOString();
+    report.history = report.history || [];
+    report.history.push({ status: report.status, at: report.updatedAt, note: `Assigned to ${department}.` });
+    localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(reports));
+    let persistenceError = null;
+    try {
+      await this.persistReports(reports);
+    } catch (error) {
+      persistenceError = error;
+    }
+    this.addAlert({
+      id: this.createId('ALT'),
+      zone: report.zoneName || report.zoneId || 'City',
+      level: 'Medium',
+      title: 'Complaint assignment updated',
+      message: `Complaint ${report.id} assigned to ${department}.`,
+      timestamp: report.updatedAt,
+      isRead: false,
+      complaintId: report.id
+    });
+    if (persistenceError) throw persistenceError;
   },
 
   getPredictions() {
@@ -239,6 +497,7 @@ const DataStore = {
       predictions.unshift(prediction);
     }
     localStorage.setItem(STORAGE_KEYS.PREDICTIONS, JSON.stringify(predictions));
+    this.notifyChange('predictions');
   },
 
   getAlerts() {
@@ -250,6 +509,7 @@ const DataStore = {
     const alerts = this.getAlerts();
     alerts.unshift(alert);
     localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify(alerts));
+    this.notifyChange('alerts');
   },
 
   markAlertRead(id) {
@@ -258,16 +518,52 @@ const DataStore = {
     if (idx !== -1) {
       alerts[idx].isRead = true;
       localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify(alerts));
+      this.notifyChange('alerts');
     }
   },
 
   clearAlerts() {
     localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify([]));
+    this.notifyChange('alerts');
   },
 
   getZones() {
     this.init();
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.ZONES) || '[]');
+    const storedZones = JSON.parse(localStorage.getItem(STORAGE_KEYS.ZONES) || '[]');
+    return storedZones.map(zone => ({
+      ...(DEFAULT_ZONES.find(defaultZone => defaultZone.id === zone.id) || {}),
+      ...zone
+    }));
+  },
+
+  exportData() {
+    return {
+      exportedAt: new Date().toISOString(),
+      reports: this.getReports(),
+      predictions: this.getPredictions(),
+      alerts: this.getAlerts(),
+      zones: this.getZones()
+    };
+  },
+
+  importData(data) {
+    if (!data || !Array.isArray(data.reports) || !Array.isArray(data.zones)) {
+      throw new Error('Backup file is missing required complaint or zone data.');
+    }
+    if (data.reports.some(report => !report || typeof report !== 'object' || typeof report.id !== 'string')
+        || new Set(data.reports.map(report => report.id)).size !== data.reports.length
+        || data.zones.some(zone => !zone || typeof zone !== 'object' || typeof zone.id !== 'string')) {
+      throw new Error('Backup contains malformed or duplicate complaint/zone records.');
+    }
+    const record = JSON.stringify(data.reports);
+    localStorage.setItem(STORAGE_KEYS.REPORTS, record);
+    if (Array.isArray(data.predictions)) localStorage.setItem(STORAGE_KEYS.PREDICTIONS, JSON.stringify(data.predictions));
+    if (Array.isArray(data.alerts)) localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify(data.alerts));
+    localStorage.setItem(STORAGE_KEYS.ZONES, JSON.stringify(data.zones));
+    this.persistReports(data.reports).catch(error => {
+      console.error('Unable to persist restored complaints to IndexedDB.', error);
+    });
+    this.notifyChange('all');
   }
 };
 

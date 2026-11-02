@@ -23,6 +23,7 @@
         <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Home Page</a>
         <a href="dashboard.html" class="nav-item active"><i class="fas fa-chart-line"></i> Authority Dashboard</a>
         <a href="citizen.html" class="nav-item"><i class="fas fa-bullhorn"></i> Citizen Portal</a>
+        <a href="tracking.html" class="nav-item"><i class="fas fa-magnifying-glass"></i> Track Complaint</a>
         <a href="predictions.html" class="nav-item"><i class="fas fa-brain"></i> AI Predictions</a>
         <a href="map.html" class="nav-item"><i class="fas fa-map-marked-alt"></i> Civic Risk Map</a>
         <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics & Insights</a>
@@ -64,9 +65,24 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">City Executive Overview</h2>
-            <p class="section-subtitle">Real-time predictive telemetry & dispatch control for 6 municipal zones</p>
+            <p class="section-subtitle">Local complaint records and prototype zone-risk estimates for 6 configured demo zones.</p>
+          </div>
+          <div class="dashboard-tools">
+            <button type="button" class="btn btn-secondary btn-sm" id="export-backup-btn"><i class="fas fa-download"></i> Backup data</button>
+            <label class="btn btn-secondary btn-sm" for="import-backup-file"><i class="fas fa-upload"></i> Restore</label>
+            <input id="import-backup-file" type="file" accept="application/json,.json" hidden>
+            <button type="button" class="btn btn-outline btn-sm" id="reset-demo-btn">Reset demo data</button>
           </div>
         </div>
+        <div class="card backend-connect">
+          <label class="form-group" for="backend-admin-token">
+            <span class="form-label">Optional backend admin token (held in memory only)</span>
+            <input id="backend-admin-token" class="form-control" type="password" autocomplete="off" placeholder="Connect to deployed API">
+          </label>
+          <button type="button" class="btn btn-secondary" id="connect-backend-btn">Connect backend</button>
+          <span id="backend-connection-status" class="backend-status" aria-live="polite">Browser storage only</span>
+        </div>
+        <p class="data-mode-note">Seeded sample complaints are marked DEMO; real complaints remain in this browser unless the optional backend is connected.</p>
 
         <!-- Dashboard Stats Grid -->
         <div class="grid-stats">
@@ -79,7 +95,31 @@
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon-wrapper amber"><i class="fas fa-spinner"></i></div>
+            <div class="stat-icon-wrapper amber"><i class="fas fa-hourglass-half"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-pending">0</span>
+              <span class="stat-label">Pending Complaints</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper green"><i class="fas fa-circle-check"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-resolved">0</span>
+              <span class="stat-label">Resolved Complaints</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper red"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-critical">0</span>
+              <span class="stat-label">Critical Complaints</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper purple"><i class="fas fa-spinner"></i></div>
             <div class="stat-info">
               <span class="stat-value" id="stat-active-problems">0</span>
               <span class="stat-label">Active Field Tasks</span>
@@ -87,26 +127,26 @@
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon-wrapper purple"><i class="fas fa-brain"></i></div>
-            <div class="stat-info">
-              <span class="stat-value" id="stat-predicted-problems">0</span>
-              <span class="stat-label">Predicted Incidents</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrapper red"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="stat-icon-wrapper orange"><i class="fas fa-triangle-exclamation"></i></div>
             <div class="stat-info">
               <span class="stat-value" id="stat-high-risk-zones">0</span>
-              <span class="stat-label">High-Risk Zones Flagged</span>
+              <span class="stat-label">High-Risk Zones</span>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon-wrapper green"><i class="fas fa-shield-check"></i></div>
+            <div class="stat-icon-wrapper blue"><i class="fas fa-percent"></i></div>
             <div class="stat-info">
-              <span class="stat-value" id="stat-prevented-incidents">0</span>
-              <span class="stat-label">Prevented Emergencies</span>
+              <span class="stat-value" id="stat-resolution-rate">0%</span>
+              <span class="stat-label">Resolution Rate</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper amber"><i class="fas fa-clock"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-average-resolution">—</span>
+              <span class="stat-label">Average Resolution Time</span>
             </div>
           </div>
         </div>
@@ -174,6 +214,20 @@
             <h3 class="card-title"><i class="fas fa-clock" style="color:var(--accent-primary);"></i> Recent Citizen Reports Feed</h3>
             <a href="citizen.html" class="btn btn-secondary btn-sm"><i class="fas fa-plus"></i> Submit New Report</a>
           </div>
+          <div class="dashboard-filters">
+            <input id="report-search" class="form-control" type="search" placeholder="Search ID, title, location">
+            <select id="report-filter-category" class="form-control"><option value="">All categories</option></select>
+            <select id="report-filter-zone" class="form-control"><option value="">All zones</option></select>
+            <select id="report-filter-priority" class="form-control">
+              <option value="">All priorities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+            </select>
+            <select id="report-filter-status" class="form-control">
+              <option value="">All statuses</option><option>Submitted</option><option>Under Review</option><option>Assigned</option><option>In Progress</option><option>Resolved</option><option>Rejected</option>
+            </select>
+            <select id="report-sort" class="form-control">
+              <option value="newest">Newest first</option><option value="priority">Highest priority</option><option value="oldest">Oldest first</option>
+            </select>
+          </div>
           <div class="table-responsive">
             <table class="table">
               <thead>
@@ -184,6 +238,7 @@
                   <th>Severity</th>
                   <th>Date</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="recent-reports-tbody">
@@ -196,6 +251,17 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="complaint-detail-modal" role="dialog" aria-modal="true" aria-labelledby="complaint-detail-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="complaint-detail-title">Complaint details</h3>
+        <button class="modal-close" type="button" data-close-complaint-modal aria-label="Close">&times;</button>
+      </div>
+      <div id="complaint-detail-content"></div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/prediction.js"></script>
   <script src="js/app.js"></script>
